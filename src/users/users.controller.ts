@@ -9,11 +9,13 @@ import {
 import { UsersService } from './users.service';
 import { SignUpUserDto } from './dto/users.dto';
 import { Response } from 'express';
+import { AllowUnauthorizedRequest } from '../auth/guard/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
+  @AllowUnauthorizedRequest()
   @Post('sign-up')
   async signUpUser(@Body() signUpUserDto: SignUpUserDto, @Res() res: Response) {
     const user = await this.userService.findUserByEmail(signUpUserDto.email);

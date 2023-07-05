@@ -5,13 +5,10 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { InjectModel, Model } from 'nestjs-dynamoose';
-import { UserModel } from './schema/users.schema';
 import { User, UserKey } from './interface/user.interface';
 import { SignUpUserDto } from './dto/users.dto';
 import { v4 } from 'uuid';
-import { AuthService } from 'src/auth/auth.service';
-import { ConfigService } from '@nestjs/config';
-
+import { AuthService } from '../auth/auth.service';
 @Injectable()
 export class UsersService {
   constructor(

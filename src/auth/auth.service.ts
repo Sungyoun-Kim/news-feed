@@ -5,11 +5,11 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { User } from 'src/users/interface/user.interface';
-import { Role } from 'src/users/schema/users.schema';
+import { User } from '../users/interface/user.interface';
+import { Role } from '../users/schema/users.schema';
 export interface payload {
   type?: string;
   user_email: string;
@@ -90,12 +90,12 @@ export class AuthService {
   async refreshUser(refreshToken: string) {
     const token: payload = this.jwtService.verify(refreshToken);
     if (token.type !== 'refresh') {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('token is not refresh token');
     }
     const user = (await this.userService.findUserById(token.sub))[0];
 
     if (!user) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('user is invalid');
     }
 
     const payload = {
