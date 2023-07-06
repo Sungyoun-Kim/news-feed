@@ -10,6 +10,7 @@ const mockRegionModel = {
 };
 const mockSchoolModel = {
   create: jest.fn(),
+  query: jest.fn(),
 };
 describe('school (e2e)', () => {
   let app: INestApplication;
@@ -49,6 +50,11 @@ describe('school (e2e)', () => {
       .post('/auth/login')
       .send({ email: 'suj970@naver.com', password: '1234' });
 
+  const getInvalidAdminAuth = async () =>
+    await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: 'suj9730@naver.com', password: '1234' });
+
   describe('/ (POST)', () => {
     it('성공적으로 학교 페이지를 생성하는 경우', async () => {
       jest.spyOn(mockRegionModel, 'query').mockImplementationOnce(() => ({
@@ -75,6 +81,7 @@ describe('school (e2e)', () => {
         .expect(201)
         .expect('"create school page successfully"');
     });
+
     it('지역이 존재하지 않는 경우', async () => {
       jest.spyOn(mockRegionModel, 'query').mockImplementationOnce(() => ({
         eq: () => ({
@@ -98,6 +105,96 @@ describe('school (e2e)', () => {
           statusCode: 400,
           message: 'region does not exist',
           error: 'Bad Request',
+        });
+    });
+  });
+
+  describe('/schools/:id/feed (POST)', () => {
+    it('성공적으로 피드를 작성하는 경우', async () => {
+      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [
+            {
+              region_name: '경상남도',
+              id: 'uuid',
+              name: '행복고등학교',
+              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+            },
+          ],
+        }),
+      }));
+
+      const response = await getAdminAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .post('/schools/uuid/feed')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .send({
+          subject: '제목',
+          content: '내용',
+        })
+        .expect(201)
+        .expect('"create school feed successfully"');
+    });
+
+    it('작성하려는 학교 존재하지 않는 경우', async () => {
+      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [],
+        }),
+      }));
+
+      const response = await getAdminAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .post('/schools/uuid/feed')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .send({
+          subject: '제목',
+          content: '내용',
+        })
+        .expect(400)
+        .expect({
+          statusCode: 400,
+          message: 'school does not exist',
+          error: 'Bad Request',
+        });
+    });
+
+    it('id를 가진 회사의 관리자가 아닌 경우', async () => {
+      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [
+            {
+              region_name: '경상남도',
+              id: 'uuid',
+              name: '행복고등학교',
+              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+            },
+          ],
+        }),
+      }));
+
+      const response = await getInvalidAdminAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .post('/schools/uuid/feed')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .send({
+          subject: '제목',
+          content: '내용',
+        })
+        .expect(403)
+        .expect({
+          statusCode: 403,
+          message: 'no permission',
+          error: 'Forbidden',
         });
     });
   });

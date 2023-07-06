@@ -3,7 +3,8 @@ import { SchoolsService } from './schools.service';
 import { SchoolsController } from './schools.controller';
 import { SchoolSchema } from './schema/schools.schema';
 import { DynamooseModule } from 'nestjs-dynamoose';
-import { RegionSchema } from './schema/region.schema';
+import { RegionSchema } from './schema/regions.schema';
+import { FeedSchema } from './schema/feeds.schema';
 
 @Module({
   imports: [
@@ -20,6 +21,13 @@ import { RegionSchema } from './schema/region.schema';
         schema: RegionSchema,
         options: {
           tableName: 'regions',
+        },
+      },
+      {
+        name: 'Feeds',
+        schema: FeedSchema,
+        options: {
+          tableName: 'feeds',
         },
       },
     ]),
