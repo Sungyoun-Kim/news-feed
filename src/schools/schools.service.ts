@@ -15,9 +15,14 @@ export class SchoolsService {
   ) {}
 
   async findRegion(name: string) {
-    const result = await this.regionModel.query('name').eq(name).exec();
+    try {
+      const result = await this.regionModel.query('name').eq(name).exec();
 
-    return result;
+      return result;
+    } catch (e) {
+      console.error('쿼리 중 에러가 발생했습니다.');
+      throw e;
+    }
   }
   async createSchoolPage(
     user_id: string,
@@ -25,7 +30,11 @@ export class SchoolsService {
   ) {
     createSchoolPageDto.id = v4();
     createSchoolPageDto.admins = [user_id];
-
-    await this.schoolModel.create(createSchoolPageDto);
+    try {
+      await this.schoolModel.create(createSchoolPageDto);
+    } catch (e) {
+      console.error('쿼리 중 에러가 발생했습니다.');
+      throw e;
+    }
   }
 }
