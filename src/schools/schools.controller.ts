@@ -2,7 +2,9 @@ import {
   BadRequestException,
   Body,
   Controller,
+  ForbiddenException,
   HttpStatus,
+  Param,
   Post,
   Req,
   Res,
@@ -10,6 +12,7 @@ import {
 import { SchoolsService } from './schools.service';
 import { CreateSchoolPageDto } from './dto/schools.dto';
 import { Request, Response } from 'express';
+import { CreateSchoolFeedDto } from './dto/feeds.dto';
 
 @Controller('schools')
 export class SchoolsController {
@@ -32,5 +35,25 @@ export class SchoolsController {
     await this.schoolService.createSchoolPage(req.user.id, createSchoolPageDto);
 
     res.status(HttpStatus.CREATED).json('create school page successfully');
+  }
+
+  @Post(':id/feed')
+  async createSchoolFeed(
+    @Req() req: Request,
+    @Param('id') schoolId: string,
+    @Body() createSchoolFeedDto: CreateSchoolFeedDto,
+    @Res() res: Response,
+  ) {
+    const school = await this.schoolService.findSchoolById(schoolId);
+    if (!school[0]) {
+      throw new BadRequestException('school does not exist');
+    }
+    if (!school[0].admins.includes(req.user.id)) {
+      throw new ForbiddenException('no permission');
+    }
+    createSchoolFeedDto.school = school[0];
+    await this.schoolService.createSchoolFeed(createSchoolFeedDto);
+
+    res.status(HttpStatus.CREATED).json('create school feed successfully');
   }
 }
