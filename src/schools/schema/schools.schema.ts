@@ -24,4 +24,4 @@ export const SchoolSchema = new Schema({
     required: true,
   },
 });
-export const UserModel = model('Schools', SchoolSchema);
+export const SchoolModel = model('Schools', SchoolSchema);

@@ -9,4 +9,4 @@ export const RegionSchema = new Schema({
   },
 });
 
-export const UserModel = model('Regions', RegionSchema);
+export const RegionModel = model('Regions', RegionSchema);
