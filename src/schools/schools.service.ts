@@ -63,4 +63,22 @@ export class SchoolsService {
       throw e;
     }
   }
+
+  async findSchoolFeed(id: string) {
+    try {
+      const result = await this.feedModel.query('id').eq(id).exec();
+      return result;
+    } catch (e) {
+      console.error('쿼리 중 에러가 발생했습니다.');
+      throw e;
+    }
+  }
+  async deleteSchoolFeed(id: string, created_at: number) {
+    try {
+      await this.feedModel.delete({ id, created_at: created_at.valueOf() });
+    } catch (e) {
+      console.error('쿼리 중 에러가 발생했습니다.');
+      throw e;
+    }
+  }
 }

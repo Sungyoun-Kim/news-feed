@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   ForbiddenException,
   HttpStatus,
   Param,
@@ -37,7 +38,7 @@ export class SchoolsController {
     res.status(HttpStatus.CREATED).json('create school page successfully');
   }
 
-  @Post(':id/feed')
+  @Post(':id/feeds')
   async createSchoolFeed(
     @Req() req: Request,
     @Param('id') schoolId: string,
@@ -55,5 +56,31 @@ export class SchoolsController {
     await this.schoolService.createSchoolFeed(createSchoolFeedDto);
 
     res.status(HttpStatus.CREATED).json('create school feed successfully');
+  }
+
+  @Delete(':schoolId/feeds/:feedId')
+  async deleteSchoolFeed(
+    @Req() req: Request,
+    @Param('schoolId') schoolId: string,
+    @Param('feedId') feedId: string,
+    @Res() res: Response,
+  ) {
+    const school = await this.schoolService.findSchoolById(schoolId);
+    if (!school[0]) {
+      throw new BadRequestException('school does not exist');
+    }
+
+    if (!school[0].admins.includes(req.user.id)) {
+      throw new ForbiddenException('no permission');
+    }
+
+    const feed = await this.schoolService.findSchoolFeed(feedId);
+    if (!feed[0]) {
+      throw new BadRequestException('feed does not exist');
+    }
+
+    await this.schoolService.deleteSchoolFeed(feed[0].id, feed[0].created_at);
+
+    res.status(HttpStatus.NO_CONTENT).end();
   }
 }
