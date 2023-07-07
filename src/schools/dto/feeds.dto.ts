@@ -1,4 +1,4 @@
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { School } from '../interface/schools.interface';
 
 export class CreateSchoolFeedDto {
@@ -10,4 +10,14 @@ export class CreateSchoolFeedDto {
 
   @IsString()
   content: string;
+}
+
+export class UpdateSchoolFeedDto {
+  @IsOptional()
+  @IsString()
+  subject?: string;
+
+  @IsOptional()
+  @IsString()
+  content?: string;
 }

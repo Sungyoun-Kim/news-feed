@@ -6,6 +6,7 @@ import {
   ForbiddenException,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Req,
   Res,
@@ -13,7 +14,7 @@ import {
 import { SchoolsService } from './schools.service';
 import { CreateSchoolPageDto } from './dto/schools.dto';
 import { Request, Response } from 'express';
-import { CreateSchoolFeedDto } from './dto/feeds.dto';
+import { CreateSchoolFeedDto, UpdateSchoolFeedDto } from './dto/feeds.dto';
 
 @Controller('schools')
 export class SchoolsController {
@@ -80,6 +81,37 @@ export class SchoolsController {
     }
 
     await this.schoolService.deleteSchoolFeed(feed[0].id, feed[0].created_at);
+
+    res.status(HttpStatus.NO_CONTENT).end();
+  }
+
+  @Patch(':schoolId/feeds/:feedId')
+  async updateSchoolFeed(
+    @Req() req: Request,
+    @Param('schoolId') schoolId: string,
+    @Param('feedId') feedId: string,
+    @Body() updateSchoolFeedDto: UpdateSchoolFeedDto,
+    @Res() res: Response,
+  ) {
+    const school = await this.schoolService.findSchoolById(schoolId);
+    if (!school[0]) {
+      throw new BadRequestException('school does not exist');
+    }
+
+    if (!school[0].admins.includes(req.user.id)) {
+      throw new ForbiddenException('no permission');
+    }
+
+    const feed = await this.schoolService.findSchoolFeed(feedId);
+    if (!feed[0]) {
+      throw new BadRequestException('feed does not exist');
+    }
+
+    await this.schoolService.updateSchoolFeed(
+      feed[0].id,
+      feed[0].created_at,
+      updateSchoolFeedDto,
+    );
 
     res.status(HttpStatus.NO_CONTENT).end();
   }
