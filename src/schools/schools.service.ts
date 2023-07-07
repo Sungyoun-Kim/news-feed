@@ -4,7 +4,7 @@ import { School, SchoolKey } from './interface/schools.interface';
 import { Region, RegionKey } from './interface/regions.interface';
 import { CreateSchoolPageDto } from './dto/schools.dto';
 import { v4 } from 'uuid';
-import { CreateSchoolFeedDto } from './dto/feeds.dto';
+import { CreateSchoolFeedDto, UpdateSchoolFeedDto } from './dto/feeds.dto';
 import { Feed, FeedKey } from './interface/feeds.interface';
 
 @Injectable()
@@ -76,6 +76,22 @@ export class SchoolsService {
   async deleteSchoolFeed(id: string, created_at: number) {
     try {
       await this.feedModel.delete({ id, created_at: created_at.valueOf() });
+    } catch (e) {
+      console.error('쿼리 중 에러가 발생했습니다.');
+      throw e;
+    }
+  }
+
+  async updateSchoolFeed(
+    id: string,
+    created_at: number,
+    updateSchoolFeedDto: UpdateSchoolFeedDto,
+  ) {
+    try {
+      await this.feedModel.update(
+        { id, created_at: created_at.valueOf() },
+        updateSchoolFeedDto,
+      );
     } catch (e) {
       console.error('쿼리 중 에러가 발생했습니다.');
       throw e;
