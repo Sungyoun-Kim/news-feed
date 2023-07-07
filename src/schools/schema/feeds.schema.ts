@@ -20,7 +20,7 @@ export const FeedSchema = new Schema({
     required: true,
   },
 
-  create_at: {
+  created_at: {
     type: Date,
     default: Date.now(),
     rangeKey: true,
