@@ -18,6 +18,7 @@ const mockFeedModel = {
   create: jest.fn(),
   query: jest.fn(),
   delete: jest.fn(),
+  update: jest.fn(),
 };
 
 describe('school (e2e)', () => {
@@ -329,6 +330,135 @@ describe('school (e2e)', () => {
 
       return request(app.getHttpServer())
         .delete('/schools/uuid/feeds/uuid2')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(400)
+        .expect({
+          statusCode: 400,
+          message: 'feed does not exist',
+          error: 'Bad Request',
+        });
+    });
+  });
+
+  describe('/schools/:schoolId/feeds/:feedId (PATCH)', () => {
+    it('성공적으로 피드를 수정하는 경우', async () => {
+      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [
+            {
+              region_name: '경상남도',
+              id: 'uuid',
+              name: '행복고등학교',
+              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+            },
+          ],
+        }),
+      }));
+
+      jest.spyOn(mockFeedModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [
+            {
+              id: 'c24788ba-62bb-49c5-a08f-2a9f82a0a44c',
+              created_at: 1688736027197,
+              content: '내용',
+              school: {
+                name: '행복고등학교',
+                id: '82d9823c-6f22-4c33-9f8c-f1c5ffce171b',
+              },
+              subject: '제목',
+            },
+          ],
+        }),
+      }));
+
+      const response = await getAdminAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .patch('/schools/uuid/feeds/uuid2')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(204);
+    });
+
+    it('학교가 존재하지 않는 경우', async () => {
+      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [],
+        }),
+      }));
+
+      const response = await getAdminAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .delete('/schools/uuid/feeds/uuid2')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(400)
+        .expect({
+          statusCode: 400,
+          message: 'school does not exist',
+          error: 'Bad Request',
+        });
+    });
+
+    it('id를 가진 회사의 관리자가 아닌 경우 ', async () => {
+      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [
+            {
+              region_name: '경상남도',
+              id: 'uuid',
+              name: '행복고등학교',
+              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+            },
+          ],
+        }),
+      }));
+
+      const response = await getInvalidAdminAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .patch('/schools/uuid/feeds/uuid2')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(403)
+        .expect({
+          statusCode: 403,
+          message: 'no permission',
+          error: 'Forbidden',
+        });
+    });
+
+    it('수정하려는 피드가 존재하지 않는 경우', async () => {
+      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [
+            {
+              region_name: '경상남도',
+              id: 'uuid',
+              name: '행복고등학교',
+              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+            },
+          ],
+        }),
+      }));
+
+      jest.spyOn(mockFeedModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [],
+        }),
+      }));
+
+      const response = await getAdminAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .patch('/schools/uuid/feeds/uuid2')
         .set('Accept', 'application/json')
         .set('Cookie', [...header['set-cookie']])
         .expect(400)
