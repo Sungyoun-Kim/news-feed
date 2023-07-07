@@ -8,10 +8,18 @@ import { getModelToken } from 'nestjs-dynamoose';
 const mockRegionModel = {
   query: jest.fn(),
 };
+
 const mockSchoolModel = {
   create: jest.fn(),
   query: jest.fn(),
 };
+
+const mockFeedModel = {
+  create: jest.fn(),
+  query: jest.fn(),
+  delete: jest.fn(),
+};
+
 describe('school (e2e)', () => {
   let app: INestApplication;
 
@@ -25,12 +33,15 @@ describe('school (e2e)', () => {
       providers: [
         { provide: getModelToken('Regions'), useValue: mockRegionModel },
         { provide: getModelToken('Schools'), useValue: mockSchoolModel },
+        { provide: getModelToken('Feeds'), useValue: mockFeedModel },
       ],
     })
       .overrideProvider(getModelToken('Regions'))
       .useValue(mockRegionModel)
       .overrideProvider(getModelToken('Schools'))
       .useValue(mockSchoolModel)
+      .overrideProvider(getModelToken('Feeds'))
+      .useValue(mockFeedModel)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -45,6 +56,7 @@ describe('school (e2e)', () => {
   afterAll(async () => {
     await app.close();
   });
+
   const getAdminAuth = async () =>
     await request(app.getHttpServer())
       .post('/auth/login')
@@ -128,7 +140,7 @@ describe('school (e2e)', () => {
       const { header } = response;
 
       return request(app.getHttpServer())
-        .post('/schools/uuid/feed')
+        .post('/schools/uuid/feeds')
         .set('Accept', 'application/json')
         .set('Cookie', [...header['set-cookie']])
         .send({
@@ -150,7 +162,7 @@ describe('school (e2e)', () => {
       const { header } = response;
 
       return request(app.getHttpServer())
-        .post('/schools/uuid/feed')
+        .post('/schools/uuid/feeds')
         .set('Accept', 'application/json')
         .set('Cookie', [...header['set-cookie']])
         .send({
@@ -183,7 +195,7 @@ describe('school (e2e)', () => {
       const { header } = response;
 
       return request(app.getHttpServer())
-        .post('/schools/uuid/feed')
+        .post('/schools/uuid/feeds')
         .set('Accept', 'application/json')
         .set('Cookie', [...header['set-cookie']])
         .send({
@@ -195,6 +207,135 @@ describe('school (e2e)', () => {
           statusCode: 403,
           message: 'no permission',
           error: 'Forbidden',
+        });
+    });
+  });
+
+  describe('/schools/:schoolId/feeds/:feedId (DELETE)', () => {
+    it('성공적으로 피드를 삭제하는 경우', async () => {
+      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [
+            {
+              region_name: '경상남도',
+              id: 'uuid',
+              name: '행복고등학교',
+              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+            },
+          ],
+        }),
+      }));
+
+      jest.spyOn(mockFeedModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [
+            {
+              id: 'c24788ba-62bb-49c5-a08f-2a9f82a0a44c',
+              created_at: 1688736027197,
+              content: '내용',
+              school: {
+                name: '행복고등학교',
+                id: '82d9823c-6f22-4c33-9f8c-f1c5ffce171b',
+              },
+              subject: '제목',
+            },
+          ],
+        }),
+      }));
+
+      const response = await getAdminAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .delete('/schools/uuid/feeds/uuid2')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(204);
+    });
+
+    it('학교가 존재하지 않는 경우', async () => {
+      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [],
+        }),
+      }));
+
+      const response = await getAdminAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .delete('/schools/uuid/feeds/uuid2')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(400)
+        .expect({
+          statusCode: 400,
+          message: 'school does not exist',
+          error: 'Bad Request',
+        });
+    });
+
+    it('id를 가진 회사의 관리자가 아닌 경우 ', async () => {
+      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [
+            {
+              region_name: '경상남도',
+              id: 'uuid',
+              name: '행복고등학교',
+              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+            },
+          ],
+        }),
+      }));
+
+      const response = await getInvalidAdminAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .delete('/schools/uuid/feeds/uuid2')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(403)
+        .expect({
+          statusCode: 403,
+          message: 'no permission',
+          error: 'Forbidden',
+        });
+    });
+
+    it('삭제하려는 피드가 존재하지 않는 경우', async () => {
+      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [
+            {
+              region_name: '경상남도',
+              id: 'uuid',
+              name: '행복고등학교',
+              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+            },
+          ],
+        }),
+      }));
+
+      jest.spyOn(mockFeedModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [],
+        }),
+      }));
+
+      const response = await getAdminAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .delete('/schools/uuid/feeds/uuid2')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(400)
+        .expect({
+          statusCode: 400,
+          message: 'feed does not exist',
+          error: 'Bad Request',
         });
     });
   });
