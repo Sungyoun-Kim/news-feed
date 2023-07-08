@@ -97,4 +97,17 @@ export class SchoolsService {
       throw e;
     }
   }
+
+  async findSubscribeSchoolPages(subscribe_schools: string[]) {
+    try {
+      const result = await this.schoolModel
+        .scan('id')
+        .in(subscribe_schools)
+        .exec();
+      return result;
+    } catch (e) {
+      console.error('쿼리 중 에러가 발생했습니다.');
+      throw e;
+    }
+  }
 }

@@ -5,6 +5,7 @@ import {
   Controller,
   Delete,
   ForbiddenException,
+  Get,
   HttpStatus,
   Param,
   Patch,
@@ -14,7 +15,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { SchoolsService } from './schools.service';
-import { CreateSchoolPageDto } from './dto/schools.dto';
+import {
+  CreateSchoolPageDto,
+  FindSubscribeSchoolPagesResponseDto,
+} from './dto/schools.dto';
 import { Request, Response } from 'express';
 import { CreateSchoolFeedDto, UpdateSchoolFeedDto } from './dto/feeds.dto';
 import {
@@ -23,6 +27,7 @@ import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNoContentResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
@@ -310,5 +315,37 @@ export class SchoolsController {
     );
 
     res.status(201).json(result);
+  }
+
+  @ApiOperation({
+    summary: '유저가 구독하고 있는 학교 페이지를 조회',
+    description: '- 유저가 구독하고 있는 모든 학교 페이지를 조회합니다\n',
+  })
+  @ApiOkResponse({
+    description: '- 유저가 구독하고 있는 모든 학교 페이지를 조회 성공 ',
+    type: FindSubscribeSchoolPagesResponseDto,
+    isArray: true,
+  })
+  @ApiUnauthorizedResponse({
+    description: '- 요청이 인가되지 않은 경우',
+  })
+  @RoleLevel(Role.user)
+  @UseGuards(RoleGuard)
+  @Get('subscribe')
+  async findSubscribeSchoolPages(
+    @Req() req: Request,
+
+    @Res() res: Response,
+  ) {
+    const user = await this.userService.findUserById(req.user.id);
+
+    if (user[0].subscribe_schools.length == 0) {
+      res.status(HttpStatus.OK).json([]);
+    } else {
+      const result = await this.schoolService.findSubscribeSchoolPages(
+        user[0].subscribe_schools,
+      );
+      res.status(HttpStatus.OK).json(result);
+    }
   }
 }

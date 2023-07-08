@@ -14,6 +14,7 @@ const mockRegionModel = {
 const mockSchoolModel = {
   create: jest.fn(),
   query: jest.fn(),
+  scan: jest.fn(),
 };
 
 const mockFeedModel = {
@@ -646,6 +647,48 @@ describe('school (e2e)', () => {
           error: 'Bad Request',
           statusCode: 400,
         });
+    });
+  });
+
+  describe('/schools/subscribe', () => {
+    it('유저가 성공적으로 구독하는 학교 페이지 목록을 조회하는 경우', async () => {
+      jest.spyOn(UsersService.prototype, 'findUserById').mockResolvedValue([
+        {
+          email: 'test1234@naver.com',
+          id: 'uuid',
+          role: 200,
+          subscribe_schools: ['82d9823c-6f22-4c33-9f8c-f1c5ffce171b'],
+        },
+      ] as QueryResponse<Item<User>>);
+
+      jest.spyOn(mockSchoolModel, 'scan').mockImplementationOnce(() => ({
+        in: () => ({
+          exec: () => [
+            {
+              region_name: '경상남도',
+              id: 'uuid',
+              name: '행복고등학교',
+              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+            },
+          ],
+        }),
+      }));
+      const response = await getUserAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .get('/schools/subscribe')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(200)
+        .expect([
+          {
+            region_name: '경상남도',
+            id: 'uuid',
+            name: '행복고등학교',
+            admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+          },
+        ]);
     });
   });
 });

@@ -32,3 +32,5 @@ export class UpdateSchoolFeedDto {
   @IsString()
   content?: string;
 }
+
+
