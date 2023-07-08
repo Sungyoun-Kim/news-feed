@@ -3,7 +3,9 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import * as cookieParser from 'cookie-parser';
-import { getModelToken } from 'nestjs-dynamoose';
+import { Item, QueryResponse, getModelToken } from 'nestjs-dynamoose';
+import { UsersService } from '../src/users/users.service';
+import { User } from '../src/users/interface/user.interface';
 
 const mockRegionModel = {
   query: jest.fn(),
@@ -43,6 +45,7 @@ describe('school (e2e)', () => {
       .useValue(mockSchoolModel)
       .overrideProvider(getModelToken('Feeds'))
       .useValue(mockFeedModel)
+
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -131,7 +134,7 @@ describe('school (e2e)', () => {
       const { header } = response;
 
       return request(app.getHttpServer())
-        .delete('/schools/uuid/feeds/uuid2')
+        .post('/schools')
         .set('Accept', 'application/json')
         .set('Cookie', [...header['set-cookie']])
         .expect(403)
@@ -237,7 +240,7 @@ describe('school (e2e)', () => {
       const { header } = response;
 
       return request(app.getHttpServer())
-        .delete('/schools/uuid/feeds/uuid2')
+        .post('/schools/uuid/feeds')
         .set('Accept', 'application/json')
         .set('Cookie', [...header['set-cookie']])
         .expect(403)
@@ -447,7 +450,7 @@ describe('school (e2e)', () => {
       const { header } = response;
 
       return request(app.getHttpServer())
-        .delete('/schools/uuid/feeds/uuid2')
+        .patch('/schools/uuid/feeds/uuid2')
         .set('Accept', 'application/json')
         .set('Cookie', [...header['set-cookie']])
         .expect(400)
@@ -526,7 +529,7 @@ describe('school (e2e)', () => {
       const { header } = response;
 
       return request(app.getHttpServer())
-        .delete('/schools/uuid/feeds/uuid2')
+        .patch('/schools/uuid/feeds/uuid2')
         .set('Accept', 'application/json')
         .set('Cookie', [...header['set-cookie']])
         .expect(403)
@@ -534,6 +537,114 @@ describe('school (e2e)', () => {
           message: 'insufficient permission',
           error: 'Forbidden',
           statusCode: 403,
+        });
+    });
+  });
+
+  describe('/schools/:schoolId/subscribe', () => {
+    it('유저가 성공적으로 구독하는 경우', async () => {
+      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [
+            {
+              region_name: '경상남도',
+              id: 'uuid',
+              name: '행복고등학교',
+              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+            },
+          ],
+        }),
+      }));
+
+      jest.spyOn(UsersService.prototype, 'findUserById').mockResolvedValue([
+        {
+          email: 'test1234@naver.com',
+          id: 'uuid',
+          role: 200,
+          subscribe_schools: ['82d9823c-6f22-4c33-9f8c-f1c5ffce171b'],
+        },
+      ] as QueryResponse<Item<User>>);
+      jest
+        .spyOn(UsersService.prototype, 'subscribeSchoolPage')
+        .mockResolvedValue({
+          email: 'test1234@naver.com',
+          id: 'uuid',
+          role: 200,
+          subscribe_schools: ['82d9823c-6f22-4c33-9f8c-f1c5ffce171b', 'uuid'],
+        } as Omit<Item<User>, 'password'>);
+
+      const response = await getUserAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .patch('/schools/uuid/subscribe')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(201)
+        .expect({
+          email: 'test1234@naver.com',
+          id: 'uuid',
+          role: 200,
+          subscribe_schools: ['82d9823c-6f22-4c33-9f8c-f1c5ffce171b', 'uuid'],
+        });
+    });
+
+    it('schoolId를 가진 학교가 존재하지 않는 경우', async () => {
+      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [],
+        }),
+      }));
+
+      const response = await getUserAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .patch('/schools/uuid/subscribe')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(400)
+        .expect({
+          message: 'schoold does not exist',
+          error: 'Bad Request',
+          statusCode: 400,
+        });
+    });
+    it('유저가 이미 schoolId를 가진 학교 페이지를 구독한 경우', async () => {
+      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [
+            {
+              region_name: '경상남도',
+              id: 'uuid',
+              name: '행복고등학교',
+              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+            },
+          ],
+        }),
+      }));
+
+      jest.spyOn(UsersService.prototype, 'findUserById').mockResolvedValue([
+        {
+          email: 'test1234@naver.com',
+          id: 'uuid',
+          role: 200,
+          subscribe_schools: ['82d9823c-6f22-4c33-9f8c-f1c5ffce171b', 'uuid'],
+        },
+      ] as QueryResponse<Item<User>>);
+
+      const response = await getUserAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .patch('/schools/uuid/subscribe')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(400)
+        .expect({
+          message: 'user already subscribe school',
+          error: 'Bad Request',
+          statusCode: 400,
         });
     });
   });
