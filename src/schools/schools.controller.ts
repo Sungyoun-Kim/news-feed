@@ -10,6 +10,7 @@ import {
   Post,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { SchoolsService } from './schools.service';
 import { CreateSchoolPageDto } from './dto/schools.dto';
@@ -26,6 +27,8 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { RoleGuard, RoleLevel } from '../auth/guard/role.guard';
+import { Role } from '../users/schema/users.schema';
 
 @ApiTags('School')
 @Controller('schools')
@@ -51,6 +54,11 @@ export class SchoolsController {
     description:
       '- 지역이 존재하지 않는 경우\n' + '- 올바르지 못한 값이 전달된 경우',
   })
+  @ApiForbiddenResponse({
+    description: '- 권한이 부족한 경우',
+  })
+  @RoleLevel(Role.admin)
+  @UseGuards(RoleGuard)
   @Post()
   async createSchoolPage(
     @Req() req: Request,
@@ -96,8 +104,11 @@ export class SchoolsController {
   })
   @ApiForbiddenResponse({
     description:
-      '- 피드 생성을 시도한 유저가 schoolId를 가진 학교의 관리자가 아닌 경우\n',
+      '- 피드 생성을 시도한 유저가 schoolId를 가진 학교의 관리자가 아닌 경우\n' +
+      '- 권한이 부족한 경우',
   })
+  @RoleLevel(Role.admin)
+  @UseGuards(RoleGuard)
   @Post(':schoolId/feeds')
   async createSchoolFeed(
     @Req() req: Request,
@@ -147,8 +158,11 @@ export class SchoolsController {
   })
   @ApiForbiddenResponse({
     description:
-      '- 피드 삭제를 시도한 유저가 schoolId를 가진 학교의 관리자가 아닌 경우\n',
+      '- 피드 삭제를 시도한 유저가 schoolId를 가진 학교의 관리자가 아닌 경우\n' +
+      '- 권한이 부족한 경우',
   })
+  @RoleLevel(Role.admin)
+  @UseGuards(RoleGuard)
   @Delete(':schoolId/feeds/:feedId')
   async deleteSchoolFeed(
     @Req() req: Request,
@@ -208,8 +222,11 @@ export class SchoolsController {
   })
   @ApiForbiddenResponse({
     description:
-      '- 피드 수정을 시도한 유저가 schoolId를 가진 학교의 관리자가 아닌 경우\n',
+      '- 피드 수정을 시도한 유저가 schoolId를 가진 학교의 관리자가 아닌 경우\n' +
+      '- 권한이 부족한 경우',
   })
+  @RoleLevel(Role.admin)
+  @UseGuards(RoleGuard)
   @Patch(':schoolId/feeds/:feedId')
   async updateSchoolFeed(
     @Req() req: Request,
