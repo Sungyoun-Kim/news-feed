@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { User } from '../users/interface/user.interface';
 import { Role } from '../users/schema/users.schema';
+
 export interface payload {
   type?: string;
   user_email: string;
@@ -88,7 +89,18 @@ export class AuthService {
     };
   }
   async refreshUser(refreshToken: string) {
-    const token: payload = this.jwtService.verify(refreshToken);
+    let token: payload;
+    try {
+      token = this.jwtService.verify(refreshToken);
+    } catch (e) {
+      if (e.name == 'JsonWebTokenError') {
+        throw new UnauthorizedException(e.message);
+      }
+      if (e.name == 'TokenExpiredError') {
+        throw new UnauthorizedException(e.message);
+      }
+    }
+
     if (token.type !== 'refresh') {
       throw new UnauthorizedException('token is not refresh token');
     }
