@@ -68,6 +68,11 @@ describe('school (e2e)', () => {
       .post('/auth/login')
       .send({ email: 'suj9730@naver.com', password: '1234' });
 
+  const getUserAuth = async () =>
+    await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: 'student@email.com', password: '1234' });
+
   describe('/ (POST)', () => {
     it('성공적으로 학교 페이지를 생성하는 경우', async () => {
       jest.spyOn(mockRegionModel, 'query').mockImplementationOnce(() => ({
@@ -118,6 +123,22 @@ describe('school (e2e)', () => {
           statusCode: 400,
           message: 'region does not exist',
           error: 'Bad Request',
+        });
+    });
+
+    it('유저의 권한이 부족한 경우 ', async () => {
+      const response = await getUserAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .delete('/schools/uuid/feeds/uuid2')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(403)
+        .expect({
+          message: 'insufficient permission',
+          error: 'Forbidden',
+          statusCode: 403,
         });
     });
   });
@@ -208,6 +229,22 @@ describe('school (e2e)', () => {
           statusCode: 403,
           message: 'no permission',
           error: 'Forbidden',
+        });
+    });
+
+    it('유저의 권한이 부족한 경우 ', async () => {
+      const response = await getUserAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .delete('/schools/uuid/feeds/uuid2')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(403)
+        .expect({
+          message: 'insufficient permission',
+          error: 'Forbidden',
+          statusCode: 403,
         });
     });
   });
@@ -339,6 +376,22 @@ describe('school (e2e)', () => {
           error: 'Bad Request',
         });
     });
+
+    it('유저의 권한이 부족한 경우 ', async () => {
+      const response = await getUserAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .delete('/schools/uuid/feeds/uuid2')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(403)
+        .expect({
+          message: 'insufficient permission',
+          error: 'Forbidden',
+          statusCode: 403,
+        });
+    });
   });
 
   describe('/schools/:schoolId/feeds/:feedId (PATCH)', () => {
@@ -466,6 +519,21 @@ describe('school (e2e)', () => {
           statusCode: 400,
           message: 'feed does not exist',
           error: 'Bad Request',
+        });
+    });
+    it('유저의 권한이 부족한 경우 ', async () => {
+      const response = await getUserAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .delete('/schools/uuid/feeds/uuid2')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(403)
+        .expect({
+          message: 'insufficient permission',
+          error: 'Forbidden',
+          statusCode: 403,
         });
     });
   });
