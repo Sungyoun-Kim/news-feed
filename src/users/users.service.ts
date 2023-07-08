@@ -60,10 +60,12 @@ export class UsersService {
 
   async subscribeSchoolPage(userId: string, email: string, schoolId: string) {
     try {
-      await this.userModel.update(
+      const result = await this.userModel.update(
         { id: userId, email: email },
         { $ADD: { subscribe_schools: [schoolId] } },
       );
+      const { password, ...rest } = result;
+      return rest;
     } catch (e) {
       console.error('쿼리를 시도하던 중 에러가 발생했습니다');
       throw e;

@@ -30,7 +30,7 @@ import {
 } from '@nestjs/swagger';
 import { RoleGuard, RoleLevel } from '../auth/guard/role.guard';
 import { Role } from '../users/schema/users.schema';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 
 @ApiTags('School')
 @Controller('schools')
@@ -273,7 +273,7 @@ export class SchoolsController {
     required: true,
   })
   @ApiCreatedResponse({
-    description: '- 학교 페이지 내에 피드 수정 성공 ',
+    description: '- 학교 페이지 구독 성공 ',
   })
   @ApiBadRequestResponse({
     description:
@@ -304,8 +304,8 @@ export class SchoolsController {
     }
 
     const result = await this.userService.subscribeSchoolPage(
-      req.user.id,
-      req.user.email,
+      user[0].id,
+      user[0].email,
       schoolId,
     );
 

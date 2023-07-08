@@ -5,7 +5,7 @@ import { SchoolSchema } from './schema/schools.schema';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { RegionSchema } from './schema/regions.schema';
 import { FeedSchema } from './schema/feeds.schema';
-import { UsersModule } from 'src/users/users.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
