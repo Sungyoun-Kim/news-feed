@@ -1,9 +1,9 @@
 export interface UserKey {
-  id?: string;
+  id: string;
+  email: string;
 }
 
 export interface User extends UserKey {
-  email?: string;
   password: string;
   role: number;
   subscribe_schools?: string[];

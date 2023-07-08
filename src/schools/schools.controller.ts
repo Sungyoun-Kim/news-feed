@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Body,
+  ConflictException,
   Controller,
   Delete,
   ForbiddenException,
@@ -29,11 +30,15 @@ import {
 } from '@nestjs/swagger';
 import { RoleGuard, RoleLevel } from '../auth/guard/role.guard';
 import { Role } from '../users/schema/users.schema';
+import { UsersService } from 'src/users/users.service';
 
 @ApiTags('School')
 @Controller('schools')
 export class SchoolsController {
-  constructor(private readonly schoolService: SchoolsService) {}
+  constructor(
+    private readonly schoolService: SchoolsService,
+    private readonly userService: UsersService,
+  ) {}
 
   @ApiOperation({
     summary: '학교 페이지 생성',
@@ -256,5 +261,54 @@ export class SchoolsController {
     );
 
     res.status(HttpStatus.NO_CONTENT).end();
+  }
+
+  @ApiOperation({
+    summary: '유저가 학교 페이지를 구독',
+    description: '- 학생은 학교 페이지를 구독할 수 있다\n',
+  })
+  @ApiParam({
+    name: 'schoolId',
+    description: '구독하려는 학교의 id',
+    required: true,
+  })
+  @ApiCreatedResponse({
+    description: '- 학교 페이지 내에 피드 수정 성공 ',
+  })
+  @ApiBadRequestResponse({
+    description:
+      '- schoolId를 가진 학교가 존재하지 않는 경우 \n' +
+      '- 유저가 이미 schoolId를 가진 학교 페이지를 구독을 한 경우 \n' +
+      '- 올바르지 못한 값이 전달된 경우',
+  })
+  @ApiUnauthorizedResponse({
+    description: '- 요청이 인가되지 않은 경우',
+  })
+  @RoleLevel(Role.user)
+  @UseGuards(RoleGuard)
+  @Patch(':schoolId/subscribe')
+  async subscribeSchoolPage(
+    @Req() req: Request,
+    @Param('schoolId') schoolId: string,
+    @Res() res: Response,
+  ) {
+    const school = await this.schoolService.findSchoolById(schoolId);
+    if (!school[0]) {
+      throw new BadRequestException('schoold does not exist');
+    }
+
+    const user = await this.userService.findUserById(req.user.id);
+
+    if (user[0] && user[0].subscribe_schools.includes(schoolId)) {
+      throw new BadRequestException('user already subscribe school');
+    }
+
+    const result = await this.userService.subscribeSchoolPage(
+      req.user.id,
+      req.user.email,
+      schoolId,
+    );
+
+    res.status(201).json(result);
   }
 }

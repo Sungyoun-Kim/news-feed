@@ -4,7 +4,7 @@ import {
   Injectable,
   forwardRef,
 } from '@nestjs/common';
-import { InjectModel, Model } from 'nestjs-dynamoose';
+import { InjectModel, Item, Model } from 'nestjs-dynamoose';
 import { User, UserKey } from './interface/user.interface';
 import { SignUpUserDto } from './dto/users.dto';
 import { v4 } from 'uuid';
@@ -52,6 +52,18 @@ export class UsersService {
       const result = await this.userModel.query('id').eq(id).exec();
 
       return result;
+    } catch (e) {
+      console.error('쿼리를 시도하던 중 에러가 발생했습니다');
+      throw e;
+    }
+  }
+
+  async subscribeSchoolPage(userId: string, email: string, schoolId: string) {
+    try {
+      await this.userModel.update(
+        { id: userId, email: email },
+        { $ADD: { subscribe_schools: [schoolId] } },
+      );
     } catch (e) {
       console.error('쿼리를 시도하던 중 에러가 발생했습니다');
       throw e;

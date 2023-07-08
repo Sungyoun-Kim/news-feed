@@ -26,8 +26,10 @@ export const UserSchema = new Schema({
     required: true,
   },
   subscribe_schools: {
-    type: Array<string>,
+    type: Array,
+    schema: [String],
     required: false,
+    default: [],
   },
 });
 export const UserModel = model('Users', UserSchema);
