@@ -108,6 +108,7 @@ describe('auth (e2e)', () => {
         .spyOn(JwtService.prototype, 'verify')
         .mockReturnValue({ type: 'refresh', sub: 'uuid' });
 
+      jest.spyOn(JwtService.prototype, 'sign').mockReturnValue('uuid');
       jest.spyOn(mockUserModel, 'query').mockImplementationOnce(() => ({
         eq: () => ({
           exec: () => [
@@ -125,7 +126,7 @@ describe('auth (e2e)', () => {
         .get('/auth/refresh')
         .query({ token: 'token' })
         .expect(200)
-        .expect({ refresh_token: { expires_in: '6000000' } });
+        .expect({ refresh_token: { token: 'uuid', expires_in: '6000000' } });
     });
 
     it('리프레쉬 토큰이 아닌 경우', () => {
