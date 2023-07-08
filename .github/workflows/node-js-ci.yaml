@@ -20,6 +20,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+        env:
+          AWS_ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY}}
+          AWS_REGION: ${{secrets.AWS_REGION}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          JWT_ACCESS_TOKEN_EXPIRED_IN_SEC: ${{secrets.JWT_ACCESS_TOKEN_EXPIRED_IN_SEC}}
+          JWT_REFRESH_TOKEN_EXPIRED_IN_SEC: ${{secrets.JWT_REFRESH_TOKEN_EXPIRED_IN_SEC}}
+          JWT_SECRET_KEY: ${{secrets.JWT_SECRET_KEY}}
       - run: npm ci
       - run: npm run build --if-present
       - run: npm test
