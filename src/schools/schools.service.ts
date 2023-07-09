@@ -57,6 +57,7 @@ export class SchoolsService {
     createSchoolFeedDto.id = v4();
 
     try {
+      console.log(Date.now());
       await this.feedModel.create(createSchoolFeedDto);
     } catch (e) {
       console.error('쿼리 중 에러가 발생했습니다.');
@@ -104,6 +105,18 @@ export class SchoolsService {
         .scan('id')
         .in(subscribe_schools)
         .exec();
+      return result;
+    } catch (e) {
+      console.error('쿼리 중 에러가 발생했습니다.');
+      throw e;
+    }
+  }
+
+  async findSchoolFeeds(id: string) {
+    try {
+      const result = (
+        await this.feedModel.scan({ 'school.id': id }).exec()
+      ).sort((a, b) => b.created_at - a.created_at);
       return result;
     } catch (e) {
       console.error('쿼리 중 에러가 발생했습니다.');
