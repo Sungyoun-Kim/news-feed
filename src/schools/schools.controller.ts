@@ -348,4 +348,52 @@ export class SchoolsController {
       res.status(HttpStatus.OK).json(result);
     }
   }
+
+  @ApiOperation({
+    summary: '유저가 학교 페이지를 구독 취소',
+    description: '- 학생은 학교 페이지를 구독을 취소할 수 있다\n',
+  })
+  @ApiParam({
+    name: 'schoolId',
+    description: '구독을 취소하려는 학교의 id',
+    required: true,
+  })
+  @ApiCreatedResponse({
+    description: '- 학교 페이지 구독 취소 성공 ',
+  })
+  @ApiBadRequestResponse({
+    description:
+      '- schoolId를 가진 학교가 존재하지 않는 경우 \n' +
+      '- 유저가 이미 schoolId를 가진 학교 페이지를 구독한 상태가 아닌 경우 \n' +
+      '- 올바르지 못한 값이 전달된 경우',
+  })
+  @ApiUnauthorizedResponse({
+    description: '- 요청이 인가되지 않은 경우',
+  })
+  @RoleLevel(Role.user)
+  @UseGuards(RoleGuard)
+  @Patch(':schoolId/unsubscribe')
+  async unsubscribeSchoolPage(
+    @Req() req: Request,
+    @Param('schoolId') schoolId: string,
+    @Res() res: Response,
+  ) {
+    const school = await this.schoolService.findSchoolById(schoolId);
+    if (!school[0]) {
+      throw new BadRequestException('schoold does not exist');
+    }
+
+    const user = await this.userService.findUserById(req.user.id);
+
+    if (user[0] && !user[0].subscribe_schools.includes(schoolId)) {
+      throw new BadRequestException('user already unsubscribe school');
+    }
+
+    const result = await this.userService.unsubscribeSchoolPage(
+      user[0],
+      schoolId,
+    );
+
+    res.status(201).json(result);
+  }
 }
