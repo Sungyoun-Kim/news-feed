@@ -20,7 +20,11 @@ import {
   FindSubscribeSchoolPagesResponseDto,
 } from './dto/schools.dto';
 import { Request, Response } from 'express';
-import { CreateSchoolFeedDto, UpdateSchoolFeedDto } from './dto/feeds.dto';
+import {
+  CreateSchoolFeedDto,
+  GetSchoolFeedResponseDto,
+  UpdateSchoolFeedDto,
+} from './dto/feeds.dto';
 import {
   ApiBadRequestResponse,
   ApiBody,
@@ -299,7 +303,7 @@ export class SchoolsController {
   ) {
     const school = await this.schoolService.findSchoolById(schoolId);
     if (!school[0]) {
-      throw new BadRequestException('schoold does not exist');
+      throw new BadRequestException('school does not exist');
     }
 
     const user = await this.userService.findUserById(req.user.id);
@@ -380,7 +384,7 @@ export class SchoolsController {
   ) {
     const school = await this.schoolService.findSchoolById(schoolId);
     if (!school[0]) {
-      throw new BadRequestException('schoold does not exist');
+      throw new BadRequestException('school does not exist');
     }
 
     const user = await this.userService.findUserById(req.user.id);
@@ -395,5 +399,51 @@ export class SchoolsController {
     );
 
     res.status(201).json(result);
+  }
+
+  @ApiOperation({
+    summary: '유저가 구독한 학교 페이지의 소식을 조회',
+    description: '- 학생은  구독한 학교 페이지의 소식을 조회할 수 있다\n',
+  })
+  @ApiParam({
+    name: 'schoolId',
+    description: '피드를 조회하려는 학교의 id',
+    required: true,
+  })
+  @ApiOkResponse({
+    description: '- 학교 페이지 피드 조회 성공 ',
+    type: GetSchoolFeedResponseDto,
+    isArray: true,
+  })
+  @ApiBadRequestResponse({
+    description:
+      '- schoolId를 가진 학교가 존재하지 않는 경우 \n' +
+      '- 올바르지 못한 값이 전달된 경우',
+  })
+  @ApiForbiddenResponse({
+    description:
+      '- 유저가 schoolId를 가진 학교 페이지를 구독한 상태가 아닌 경우 \n',
+  })
+  @ApiUnauthorizedResponse({
+    description: '- 요청이 인가되지 않은 경우',
+  })
+  @Get(':schoolId/feeds')
+  async getSchoolFeed(
+    @Req() req: Request,
+    @Param('schoolId') schoolId: string,
+    @Res() res: Response,
+  ) {
+    const school = await this.schoolService.findSchoolById(schoolId);
+    if (!school[0]) {
+      throw new BadRequestException('school does not exist');
+    }
+
+    const user = await this.userService.findUserById(req.user.id);
+
+    if (user[0] && !user[0].subscribe_schools.includes(schoolId)) {
+      throw new ForbiddenException('should subscribe school page');
+    }
+    const result = await this.schoolService.findSchoolFeeds(schoolId);
+    res.status(200).json(result);
   }
 }

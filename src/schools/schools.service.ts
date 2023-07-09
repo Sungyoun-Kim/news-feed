@@ -110,4 +110,16 @@ export class SchoolsService {
       throw e;
     }
   }
+
+  async findSchoolFeeds(id: string) {
+    try {
+      const result = (
+        await this.feedModel.scan({ 'school.id': id }).exec()
+      ).sort((a, b) => b.created_at - a.created_at);
+      return result;
+    } catch (e) {
+      console.error('쿼리 중 에러가 발생했습니다.');
+      throw e;
+    }
+  }
 }

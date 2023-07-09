@@ -33,4 +33,37 @@ export class UpdateSchoolFeedDto {
   content?: string;
 }
 
+export class GetSchoolFeedResponseDto {
+  @ApiProperty({
+    description: 'id',
+    example: '196d8503-7ab9-42c7-a30d-dfcff55d9034',
+  })
+  id: string;
 
+  @ApiProperty({
+    description: '제목',
+    example: '페이지 생성 후 첫 소식 제목',
+  })
+  subject: string;
+
+  @ApiProperty({
+    description: 'id',
+    example: '페이지 생성 후 첫 소식내용입니다',
+  })
+  content: string;
+
+  @ApiProperty({
+    description: '학교 정보',
+    example: {
+      name: '1234',
+      id: '762c9664-a2fe-4f7f-b0e8-2c1babfb07ad',
+    },
+  })
+  school: School;
+
+  @ApiProperty({
+    description: '생성 시간',
+    example: '2023-07-09T07:55:25.549Z',
+  })
+  created_at: string;
+}
