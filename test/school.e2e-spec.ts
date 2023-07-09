@@ -691,4 +691,112 @@ describe('school (e2e)', () => {
         ]);
     });
   });
+
+  describe('/schools/:schoolId/unsubscribe', () => {
+    it('유저가 성공적으로 구독을 취소하는 경우', async () => {
+      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [
+            {
+              region_name: '경상남도',
+              id: 'uuid',
+              name: '행복고등학교',
+              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+            },
+          ],
+        }),
+      }));
+
+      jest.spyOn(UsersService.prototype, 'findUserById').mockResolvedValue([
+        {
+          email: 'test1234@naver.com',
+          id: 'uuid',
+          role: 200,
+          subscribe_schools: ['uuid'],
+        },
+      ] as QueryResponse<Item<User>>);
+      jest
+        .spyOn(UsersService.prototype, 'unsubscribeSchoolPage')
+        .mockResolvedValue({
+          email: 'test1234@naver.com',
+          id: 'uuid',
+          role: 200,
+          subscribe_schools: [],
+        } as Omit<Item<User>, 'password'>);
+
+      const response = await getUserAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .patch('/schools/uuid/unsubscribe')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(201)
+        .expect({
+          email: 'test1234@naver.com',
+          id: 'uuid',
+          role: 200,
+          subscribe_schools: [],
+        });
+    });
+
+    it('schoolId를 가진 학교가 존재하지 않는 경우', async () => {
+      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [],
+        }),
+      }));
+
+      const response = await getUserAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .patch('/schools/uuid/unsubscribe')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(400)
+        .expect({
+          message: 'schoold does not exist',
+          error: 'Bad Request',
+          statusCode: 400,
+        });
+    });
+    it('유저가 이미 schoolId를 가진 학교 페이지를 구독하지 않은 경우', async () => {
+      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
+        eq: () => ({
+          exec: () => [
+            {
+              region_name: '경상남도',
+              id: 'uuid',
+              name: '행복고등학교',
+              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+            },
+          ],
+        }),
+      }));
+
+      jest.spyOn(UsersService.prototype, 'findUserById').mockResolvedValue([
+        {
+          email: 'test1234@naver.com',
+          id: 'uuid',
+          role: 200,
+          subscribe_schools: [],
+        },
+      ] as QueryResponse<Item<User>>);
+
+      const response = await getUserAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .patch('/schools/uuid/unsubscribe')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(400)
+        .expect({
+          message: 'user already unsubscribe school',
+          error: 'Bad Request',
+          statusCode: 400,
+        });
+    });
+  });
 });

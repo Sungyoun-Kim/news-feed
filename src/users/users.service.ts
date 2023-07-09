@@ -71,4 +71,26 @@ export class UsersService {
       throw e;
     }
   }
+
+  /*
+   *https://github.com/dynamoose/dynamoose/issues/398
+   *$ADD가 set이나 list에 요소를 추가하는 것 처럼
+   *요소를 제거하는 것이 지원되지 않는 것 같습니다
+   */
+  async unsubscribeSchoolPage(user: User, schoolId: string) {
+    try {
+      const deletedSchoolArr = user.subscribe_schools.filter(
+        (id) => id !== schoolId,
+      );
+      const result = await this.userModel.update(
+        { id: user.id, email: user.email },
+        { $SET: { subscribe_schools: deletedSchoolArr } },
+      );
+      const { password, ...rest } = result;
+      return rest;
+    } catch (e) {
+      console.error('쿼리를 시도하던 중 에러가 발생했습니다');
+      throw e;
+    }
+  }
 }
