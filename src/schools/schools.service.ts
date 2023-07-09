@@ -57,7 +57,6 @@ export class SchoolsService {
     createSchoolFeedDto.id = v4();
 
     try {
-      console.log(Date.now());
       await this.feedModel.create(createSchoolFeedDto);
     } catch (e) {
       console.error('쿼리 중 에러가 발생했습니다.');
