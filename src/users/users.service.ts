@@ -47,9 +47,9 @@ export class UsersService {
       throw e;
     }
   }
-  async findUserById(id: string) {
+  async findUserByIdAndEmail(id: string, email: string) {
     try {
-      const result = await this.userModel.query('id').eq(id).exec();
+      const result = await this.userModel.get({ id, email });
 
       return result;
     } catch (e) {

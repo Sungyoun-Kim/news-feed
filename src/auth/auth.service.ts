@@ -104,7 +104,10 @@ export class AuthService {
     if (token.type !== 'refresh') {
       throw new UnauthorizedException('token is not refresh token');
     }
-    const user = (await this.userService.findUserById(token.sub))[0];
+    const user = await this.userService.findUserByIdAndEmail(
+      token.sub,
+      token.user_email,
+    );
 
     if (!user) {
       throw new UnauthorizedException('user is invalid');

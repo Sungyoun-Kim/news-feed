@@ -4,6 +4,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { payload } from './auth.service';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
@@ -21,14 +22,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any) {
+  async validate(payload: payload) {
     if (!payload.type || payload.type !== 'access') {
       throw new UnauthorizedException(
         'token does not have type or type is not access token',
       );
     }
 
-    const user = (await this.userService.findUserById(payload.sub))[0];
+    const user = await this.userService.findUserByIdAndEmail(
+      payload.sub,
+      payload.user_email,
+    );
 
     if (!user) {
       throw new UnauthorizedException('user information in payload is invalid');
