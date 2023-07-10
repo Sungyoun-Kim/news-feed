@@ -47,8 +47,8 @@ export class UsersController {
       throw new BadRequestException('email already exist');
     }
 
-    await this.userService.signUpUser(signUpUserDto);
+    const result = await this.userService.signUpUser(signUpUserDto);
 
-    res.status(HttpStatus.CREATED).json('user has been signed up');
+    res.status(HttpStatus.CREATED).json(result);
   }
 }

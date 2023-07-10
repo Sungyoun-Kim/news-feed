@@ -297,7 +297,7 @@ export class SchoolsController {
   @ApiUnauthorizedResponse({
     description: '- 요청이 인가되지 않은 경우',
   })
-  @RoleLevel(Role.user)
+  @RoleLevel(Role.student)
   @UseGuards(RoleGuard)
   @Patch(':schoolId/subscribe')
   async subscribeSchoolPage(
@@ -340,7 +340,7 @@ export class SchoolsController {
   @ApiUnauthorizedResponse({
     description: '- 요청이 인가되지 않은 경우',
   })
-  @RoleLevel(Role.user)
+  @RoleLevel(Role.student)
   @UseGuards(RoleGuard)
   @Get('subscribe')
   async findSubscribeSchoolPages(
@@ -384,7 +384,7 @@ export class SchoolsController {
   @ApiUnauthorizedResponse({
     description: '- 요청이 인가되지 않은 경우',
   })
-  @RoleLevel(Role.user)
+  @RoleLevel(Role.student)
   @UseGuards(RoleGuard)
   @Patch(':schoolId/unsubscribe')
   async unsubscribeSchoolPage(
@@ -440,6 +440,8 @@ export class SchoolsController {
   @ApiUnauthorizedResponse({
     description: '- 요청이 인가되지 않은 경우',
   })
+  @RoleLevel(Role.student)
+  @UseGuards(RoleGuard)
   @Get(':schoolId/feeds')
   async getSchoolFeed(
     @Req() req: Request,

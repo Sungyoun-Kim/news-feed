@@ -1,11 +1,13 @@
 import { Schema, model } from 'dynamoose';
 import { SchoolModel } from './schools.schema';
+import { v4 } from 'uuid';
 
 export const FeedSchema = new Schema({
   id: {
     type: String,
     hashKey: true,
     required: true,
+    default: () => v4(),
   },
   subject: {
     type: String,

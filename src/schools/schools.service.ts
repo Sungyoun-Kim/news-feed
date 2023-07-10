@@ -33,7 +33,6 @@ export class SchoolsService {
     userId: string,
     createSchoolPageDto: CreateSchoolPageDto,
   ) {
-    createSchoolPageDto.id = v4();
     createSchoolPageDto.admins = [userId];
     try {
       const result = await this.schoolModel.create(createSchoolPageDto);
@@ -56,8 +55,6 @@ export class SchoolsService {
   }
 
   async createSchoolFeed(createSchoolFeedDto: CreateSchoolFeedDto) {
-    createSchoolFeedDto.id = v4();
-
     try {
       const result = await this.feedModel.create(createSchoolFeedDto);
       return result;
