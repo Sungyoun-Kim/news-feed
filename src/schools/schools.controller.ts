@@ -176,14 +176,17 @@ export class SchoolsController {
       user.subscribe_schools.map((school) => subscribeSchoolIds.push(school));
       const result = await this.schoolService.findSubscribeSchoolPages(
         subscribeSchoolIds,
-      );subscribeSchoolIds
+      );
+
       res.status(HttpStatus.OK).json(result);
     }
   }
 
   @ApiOperation({
     summary: '학생이 학교 페이지를 구독 취소',
-    description: '- 학생은 학교 페이지를 구독을 취소할 수 있다\n',
+    description:
+      '- 학생은 학교 페이지를 구독을 취소할 수 있다\n' +
+      '- 구독을 취소할 시 구독 시점부터 취소 시점까지의 소식을 다른 테이블에 저장합니다.\n',
   })
   @ApiParam({
     name: 'schoolId',
@@ -227,11 +230,12 @@ export class SchoolsController {
       throw new BadRequestException('user already unsubscribe school');
     }
 
-    const result = await this.userService.unsubscribeSchoolPage(
-      user,
-      school.id,
-    );
+    await this.userService.unsubscribeSchoolPage(user, school.id);
 
+    const result = await this.userService.findUserByIdAndEmail(
+      user.id,
+      user.email,
+    );
     res.status(201).json(result);
   }
 }
