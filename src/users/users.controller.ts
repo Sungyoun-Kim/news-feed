@@ -7,7 +7,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { SignUpUserDto } from './dto/users.dto';
+import { SignUpUserDto, SignUpUserResponseDto } from './dto/users.dto';
 import { Response } from 'express';
 import { AllowUnauthorizedRequest } from '../auth/guard/jwt-auth.guard';
 import {
@@ -34,6 +34,7 @@ export class UsersController {
   })
   @ApiCreatedResponse({
     description: '- 회원가입 성공 ',
+    type: SignUpUserResponseDto,
   })
   @ApiBadRequestResponse({
     description:

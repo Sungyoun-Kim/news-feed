@@ -16,10 +16,12 @@ import {
 import { SchoolsService } from './schools.service';
 import {
   CreateSchoolPageDto,
+  CreateSchoolPageResponseDto,
   FindSubscribeSchoolPagesResponseDto,
 } from './dto/schools.dto';
 import { Request, Response } from 'express';
 import {
+  CreateSchooFeedResponseDto,
   CreateSchoolFeedDto,
   GetSchoolFeedResponseDto,
   UpdateSchoolFeedDto,
@@ -62,6 +64,7 @@ export class SchoolsController {
   })
   @ApiCreatedResponse({
     description: '- 학교 페이지 생성 성공 ',
+    type: CreateSchoolPageResponseDto,
   })
   @ApiBadRequestResponse({
     description:
@@ -109,6 +112,7 @@ export class SchoolsController {
   })
   @ApiCreatedResponse({
     description: '- 학교 페이지 내에 피드 생성 성공 ',
+    type: CreateSchooFeedResponseDto,
   })
   @ApiBadRequestResponse({
     description:

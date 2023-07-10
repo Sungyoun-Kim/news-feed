@@ -15,6 +15,35 @@ export class CreateSchoolFeedDto {
   content: string;
 }
 
+export class CreateSchooFeedResponseDto {
+  @ApiProperty({
+    description: 'id',
+    example: '196d8503-7ab9-42c7-a30d-dfcff55d9034',
+  })
+  id: string;
+
+  @ApiProperty({
+    description: '제목',
+    example: '페이지 생성 후 첫 소식 제목',
+  })
+  subject: string;
+
+  @ApiProperty({
+    description: 'id',
+    example: '페이지 생성 후 첫 소식내용입니다',
+  })
+  content: string;
+
+  @ApiProperty({
+    description: '학교 정보',
+    example: {
+      name: '1234',
+      id: '762c9664-a2fe-4f7f-b0e8-2c1babfb07ad',
+    },
+  })
+  school: School;
+}
+
 export class UpdateSchoolFeedDto {
   @ApiProperty({
     description: '제목',
