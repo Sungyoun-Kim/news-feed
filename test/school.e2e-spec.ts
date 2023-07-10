@@ -8,13 +8,14 @@ import { UsersService } from '../src/users/users.service';
 import { User } from '../src/users/interface/user.interface';
 
 const mockRegionModel = {
-  query: jest.fn(),
+  get: jest.fn(),
 };
 
 const mockSchoolModel = {
   create: jest.fn(),
   query: jest.fn(),
   scan: jest.fn(),
+  get: jest.fn(),
 };
 
 const mockFeedModel = {
@@ -80,14 +81,15 @@ describe('school (e2e)', () => {
 
   describe('/ (POST)', () => {
     it('성공적으로 학교 페이지를 생성하는 경우', async () => {
-      jest.spyOn(mockRegionModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [
-            {
-              name: '서울특별시',
-            },
-          ],
-        }),
+      jest.spyOn(mockRegionModel, 'get').mockImplementationOnce(() => ({
+        name: '서울특별시',
+      }));
+
+      jest.spyOn(mockSchoolModel, 'create').mockImplementation(() => ({
+        email: 'tes33313t2@email.com',
+        role: 300,
+        id: '0333feb3-ccee-4ed8-814c-e6130ca2838c',
+        subscribe_schools: [],
       }));
 
       const response = await getAdminAuth();
@@ -102,16 +104,15 @@ describe('school (e2e)', () => {
           region_name: '서울특별시',
         })
         .expect(201)
-        .expect('"create school page successfully"');
+        .expect({
+          email: 'tes33313t2@email.com',
+          role: 300,
+          id: '0333feb3-ccee-4ed8-814c-e6130ca2838c',
+          subscribe_schools: [],
+        });
     });
 
     it('지역이 존재하지 않는 경우', async () => {
-      jest.spyOn(mockRegionModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [],
-        }),
-      }));
-
       const response = await getAdminAuth();
       const { header } = response;
 
@@ -150,17 +151,22 @@ describe('school (e2e)', () => {
 
   describe('/schools/:id/feed (POST)', () => {
     it('성공적으로 피드를 작성하는 경우', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [
-            {
-              region_name: '경상남도',
-              id: 'uuid',
-              name: '행복고등학교',
-              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
-            },
-          ],
-        }),
+      jest.spyOn(mockSchoolModel, 'get').mockImplementationOnce(() => ({
+        region_name: '경상남도',
+        id: 'uuid',
+        name: '행복고등학교',
+        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+      }));
+
+      jest.spyOn(mockFeedModel, 'create').mockImplementationOnce(() => ({
+        subject: '페이지 생성 후 첫 소식',
+        content: '페이지 생성 후 첫 소식이에요',
+        school: {
+          id: '27683a25-3d9d-48c6-9913-e60602445dca',
+          name: '123123',
+        },
+        id: '1b14ab6c-3671-4a05-8edc-2532f1407a91',
+        created_at: 1688961826662,
       }));
 
       const response = await getAdminAuth();
@@ -175,16 +181,19 @@ describe('school (e2e)', () => {
           content: '내용',
         })
         .expect(201)
-        .expect('"create school feed successfully"');
+        .expect({
+          subject: '페이지 생성 후 첫 소식',
+          content: '페이지 생성 후 첫 소식이에요',
+          school: {
+            id: '27683a25-3d9d-48c6-9913-e60602445dca',
+            name: '123123',
+          },
+          id: '1b14ab6c-3671-4a05-8edc-2532f1407a91',
+          created_at: 1688961826662,
+        });
     });
 
     it('작성하려는 학교 존재하지 않는 경우', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [],
-        }),
-      }));
-
       const response = await getAdminAuth();
       const { header } = response;
 
@@ -205,17 +214,11 @@ describe('school (e2e)', () => {
     });
 
     it('id를 가진 회사의 관리자가 아닌 경우', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [
-            {
-              region_name: '경상남도',
-              id: 'uuid',
-              name: '행복고등학교',
-              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
-            },
-          ],
-        }),
+      jest.spyOn(mockSchoolModel, 'get').mockImplementationOnce(() => ({
+        region_name: '경상남도',
+        id: 'uuid',
+        name: '행복고등학교',
+        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
       }));
 
       const response = await getInvalidAdminAuth();
@@ -256,17 +259,11 @@ describe('school (e2e)', () => {
 
   describe('/schools/:schoolId/feeds/:feedId (DELETE)', () => {
     it('성공적으로 피드를 삭제하는 경우', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [
-            {
-              region_name: '경상남도',
-              id: 'uuid',
-              name: '행복고등학교',
-              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
-            },
-          ],
-        }),
+      jest.spyOn(mockSchoolModel, 'get').mockImplementationOnce(() => ({
+        region_name: '경상남도',
+        id: 'uuid',
+        name: '행복고등학교',
+        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
       }));
 
       jest.spyOn(mockFeedModel, 'query').mockImplementationOnce(() => ({
@@ -297,12 +294,6 @@ describe('school (e2e)', () => {
     });
 
     it('학교가 존재하지 않는 경우', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [],
-        }),
-      }));
-
       const response = await getAdminAuth();
       const { header } = response;
 
@@ -319,17 +310,11 @@ describe('school (e2e)', () => {
     });
 
     it('id를 가진 회사의 관리자가 아닌 경우 ', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [
-            {
-              region_name: '경상남도',
-              id: 'uuid',
-              name: '행복고등학교',
-              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
-            },
-          ],
-        }),
+      jest.spyOn(mockSchoolModel, 'get').mockImplementationOnce(() => ({
+        region_name: '경상남도',
+        id: 'uuid',
+        name: '행복고등학교',
+        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
       }));
 
       const response = await getInvalidAdminAuth();
@@ -348,17 +333,11 @@ describe('school (e2e)', () => {
     });
 
     it('삭제하려는 피드가 존재하지 않는 경우', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [
-            {
-              region_name: '경상남도',
-              id: 'uuid',
-              name: '행복고등학교',
-              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
-            },
-          ],
-        }),
+      jest.spyOn(mockSchoolModel, 'get').mockImplementationOnce(() => ({
+        region_name: '경상남도',
+        id: 'uuid',
+        name: '행복고등학교',
+        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
       }));
 
       jest.spyOn(mockFeedModel, 'query').mockImplementationOnce(() => ({
@@ -401,17 +380,11 @@ describe('school (e2e)', () => {
 
   describe('/schools/:schoolId/feeds/:feedId (PATCH)', () => {
     it('성공적으로 피드를 수정하는 경우', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [
-            {
-              region_name: '경상남도',
-              id: 'uuid',
-              name: '행복고등학교',
-              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
-            },
-          ],
-        }),
+      jest.spyOn(mockSchoolModel, 'get').mockImplementationOnce(() => ({
+        region_name: '경상남도',
+        id: 'uuid',
+        name: '행복고등학교',
+        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
       }));
 
       jest.spyOn(mockFeedModel, 'query').mockImplementationOnce(() => ({
@@ -442,12 +415,6 @@ describe('school (e2e)', () => {
     });
 
     it('학교가 존재하지 않는 경우', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [],
-        }),
-      }));
-
       const response = await getAdminAuth();
       const { header } = response;
 
@@ -464,17 +431,11 @@ describe('school (e2e)', () => {
     });
 
     it('id를 가진 회사의 관리자가 아닌 경우 ', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [
-            {
-              region_name: '경상남도',
-              id: 'uuid',
-              name: '행복고등학교',
-              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
-            },
-          ],
-        }),
+      jest.spyOn(mockSchoolModel, 'get').mockImplementationOnce(() => ({
+        region_name: '경상남도',
+        id: 'uuid',
+        name: '행복고등학교',
+        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
       }));
 
       const response = await getInvalidAdminAuth();
@@ -493,17 +454,11 @@ describe('school (e2e)', () => {
     });
 
     it('수정하려는 피드가 존재하지 않는 경우', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [
-            {
-              region_name: '경상남도',
-              id: 'uuid',
-              name: '행복고등학교',
-              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
-            },
-          ],
-        }),
+      jest.spyOn(mockSchoolModel, 'get').mockImplementationOnce(() => ({
+        region_name: '경상남도',
+        id: 'uuid',
+        name: '행복고등학교',
+        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
       }));
 
       jest.spyOn(mockFeedModel, 'query').mockImplementationOnce(() => ({
@@ -545,27 +500,21 @@ describe('school (e2e)', () => {
 
   describe('/schools/:schoolId/subscribe', () => {
     it('유저가 성공적으로 구독하는 경우', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [
-            {
-              region_name: '경상남도',
-              id: 'uuid',
-              name: '행복고등학교',
-              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
-            },
-          ],
-        }),
+      jest.spyOn(mockSchoolModel, 'get').mockImplementationOnce(() => ({
+        region_name: '경상남도',
+        id: 'uuid',
+        name: '행복고등학교',
+        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
       }));
 
-      jest.spyOn(UsersService.prototype, 'findUserById').mockResolvedValue([
-        {
+      jest
+        .spyOn(UsersService.prototype, 'findUserByIdAndEmail')
+        .mockResolvedValue({
           email: 'test1234@naver.com',
           id: 'uuid',
           role: 200,
           subscribe_schools: ['82d9823c-6f22-4c33-9f8c-f1c5ffce171b'],
-        },
-      ] as QueryResponse<Item<User>>);
+        } as Item<User>);
       jest
         .spyOn(UsersService.prototype, 'subscribeSchoolPage')
         .mockResolvedValue({
@@ -592,12 +541,6 @@ describe('school (e2e)', () => {
     });
 
     it('schoolId를 가진 학교가 존재하지 않는 경우', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [],
-        }),
-      }));
-
       const response = await getUserAuth();
       const { header } = response;
 
@@ -613,27 +556,20 @@ describe('school (e2e)', () => {
         });
     });
     it('유저가 이미 schoolId를 가진 학교 페이지를 구독한 경우', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [
-            {
-              region_name: '경상남도',
-              id: 'uuid',
-              name: '행복고등학교',
-              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
-            },
-          ],
-        }),
-      }));
-
-      jest.spyOn(UsersService.prototype, 'findUserById').mockResolvedValue([
-        {
-          email: 'test1234@naver.com',
-          id: 'uuid',
-          role: 200,
-          subscribe_schools: ['82d9823c-6f22-4c33-9f8c-f1c5ffce171b', 'uuid'],
-        },
-      ] as QueryResponse<Item<User>>);
+      jest.spyOn(mockSchoolModel, 'get').mockImplementationOnce(() => ({
+        region_name: '경상남도',
+        id: 'uuid',
+        name: '행복고등학교',
+        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+      })),
+        jest
+          .spyOn(UsersService.prototype, 'findUserByIdAndEmail')
+          .mockResolvedValue({
+            email: 'test1234@naver.com',
+            id: 'uuid',
+            role: 200,
+            subscribe_schools: ['82d9823c-6f22-4c33-9f8c-f1c5ffce171b', 'uuid'],
+          } as Item<User>);
 
       const response = await getUserAuth();
       const { header } = response;
@@ -653,14 +589,14 @@ describe('school (e2e)', () => {
 
   describe('/schools/subscribe', () => {
     it('유저가 성공적으로 구독하는 학교 페이지 목록을 조회하는 경우', async () => {
-      jest.spyOn(UsersService.prototype, 'findUserById').mockResolvedValue([
-        {
+      jest
+        .spyOn(UsersService.prototype, 'findUserByIdAndEmail')
+        .mockResolvedValue({
           email: 'test1234@naver.com',
           id: 'uuid',
           role: 200,
           subscribe_schools: ['82d9823c-6f22-4c33-9f8c-f1c5ffce171b'],
-        },
-      ] as QueryResponse<Item<User>>);
+        } as Item<User>);
 
       jest.spyOn(mockSchoolModel, 'scan').mockImplementationOnce(() => ({
         in: () => ({
@@ -695,27 +631,21 @@ describe('school (e2e)', () => {
 
   describe('/schools/:schoolId/unsubscribe', () => {
     it('유저가 성공적으로 구독을 취소하는 경우', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [
-            {
-              region_name: '경상남도',
-              id: 'uuid',
-              name: '행복고등학교',
-              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
-            },
-          ],
-        }),
+      jest.spyOn(mockSchoolModel, 'get').mockImplementationOnce(() => ({
+        region_name: '경상남도',
+        id: 'uuid',
+        name: '행복고등학교',
+        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
       }));
 
-      jest.spyOn(UsersService.prototype, 'findUserById').mockResolvedValue([
-        {
+      jest
+        .spyOn(UsersService.prototype, 'findUserByIdAndEmail')
+        .mockResolvedValue({
           email: 'test1234@naver.com',
           id: 'uuid',
           role: 200,
           subscribe_schools: ['uuid'],
-        },
-      ] as QueryResponse<Item<User>>);
+        } as Item<User>);
       jest
         .spyOn(UsersService.prototype, 'unsubscribeSchoolPage')
         .mockResolvedValue({
@@ -742,12 +672,6 @@ describe('school (e2e)', () => {
     });
 
     it('schoolId를 가진 학교가 존재하지 않는 경우', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [],
-        }),
-      }));
-
       const response = await getUserAuth();
       const { header } = response;
 
@@ -763,27 +687,21 @@ describe('school (e2e)', () => {
         });
     });
     it('유저가 이미 schoolId를 가진 학교 페이지를 구독하지 않은 경우', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [
-            {
-              region_name: '경상남도',
-              id: 'uuid',
-              name: '행복고등학교',
-              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
-            },
-          ],
-        }),
+      jest.spyOn(mockSchoolModel, 'get').mockImplementationOnce(() => ({
+        region_name: '경상남도',
+        id: 'uuid',
+        name: '행복고등학교',
+        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
       }));
 
-      jest.spyOn(UsersService.prototype, 'findUserById').mockResolvedValue([
-        {
+      jest
+        .spyOn(UsersService.prototype, 'findUserByIdAndEmail')
+        .mockResolvedValue({
           email: 'test1234@naver.com',
           id: 'uuid',
           role: 200,
           subscribe_schools: [],
-        },
-      ] as QueryResponse<Item<User>>);
+        } as Item<User>);
 
       const response = await getUserAuth();
       const { header } = response;
@@ -803,27 +721,21 @@ describe('school (e2e)', () => {
 
   describe('/schools/:schoolId/feed', () => {
     it('유저가 성공적으로 소식을 조회하는 경우', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [
-            {
-              region_name: '경상남도',
-              id: 'uuid',
-              name: '행복고등학교',
-              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
-            },
-          ],
-        }),
+      jest.spyOn(mockSchoolModel, 'get').mockImplementationOnce(() => ({
+        region_name: '경상남도',
+        id: 'uuid',
+        name: '행복고등학교',
+        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
       }));
 
-      jest.spyOn(UsersService.prototype, 'findUserById').mockResolvedValue([
-        {
+      jest
+        .spyOn(UsersService.prototype, 'findUserByIdAndEmail')
+        .mockResolvedValue({
           email: 'test1234@naver.com',
           id: 'uuid',
           role: 200,
           subscribe_schools: ['uuid'],
-        },
-      ] as QueryResponse<Item<User>>);
+        } as Item<User>);
 
       jest.spyOn(mockFeedModel, 'scan').mockImplementationOnce(() => ({
         exec: () => [
@@ -855,12 +767,6 @@ describe('school (e2e)', () => {
     });
 
     it('schoolId를 가진 학교가 존재하지 않는 경우', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [],
-        }),
-      }));
-
       const response = await getUserAuth();
       const { header } = response;
 
@@ -876,27 +782,20 @@ describe('school (e2e)', () => {
         });
     });
     it('유저가 schoolId를 가진 학교 페이지를 구독하지 않은 경우', async () => {
-      jest.spyOn(mockSchoolModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [
-            {
-              region_name: '경상남도',
-              id: 'uuid',
-              name: '행복고등학교',
-              admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
-            },
-          ],
-        }),
+      jest.spyOn(mockSchoolModel, 'get').mockImplementationOnce(() => ({
+        region_name: '경상남도',
+        id: 'uuid',
+        name: '행복고등학교',
+        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
       }));
-
-      jest.spyOn(UsersService.prototype, 'findUserById').mockResolvedValue([
-        {
+      jest
+        .spyOn(UsersService.prototype, 'findUserByIdAndEmail')
+        .mockResolvedValue({
           email: 'test1234@naver.com',
           id: 'uuid',
           role: 200,
           subscribe_schools: [],
-        },
-      ] as QueryResponse<Item<User>>);
+        } as Item<User>);
 
       const response = await getUserAuth();
       const { header } = response;

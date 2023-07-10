@@ -70,6 +70,11 @@ describe('User (e2e)', () => {
         }),
       }));
 
+      jest.spyOn(mockUserModel, 'create').mockImplementation(() => ({
+        email: 'email@naver.com',
+        password: 'password',
+      }));
+
       return request(app.getHttpServer())
         .post('/users/sign-up')
         .send({
@@ -77,7 +82,7 @@ describe('User (e2e)', () => {
           password: 'password',
         })
         .expect(201)
-        .expect('"user has been signed up"');
+        .expect('{"email":"email@naver.com"}');
     });
   });
 });
