@@ -22,11 +22,10 @@ export class UsersService {
     signUpUserDto.password = await this.authService.hashPassword(
       signUpUserDto.password,
     );
-
-    signUpUserDto.id = v4();
-
     try {
-      return await this.userModel.create(signUpUserDto);
+      const result = await this.userModel.create(signUpUserDto);
+      const { password, ...rest } = result;
+      return rest;
     } catch (e) {
       console.error('쿼리를 시도하던 중 에러가 발생했습니다');
       throw e;
@@ -47,9 +46,9 @@ export class UsersService {
       throw e;
     }
   }
-  async findUserById(id: string) {
+  async findUserByIdAndEmail(id: string, email: string) {
     try {
-      const result = await this.userModel.query('id').eq(id).exec();
+      const result = await this.userModel.get({ id, email });
 
       return result;
     } catch (e) {

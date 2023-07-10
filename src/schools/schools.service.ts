@@ -20,7 +20,7 @@ export class SchoolsService {
 
   async findRegion(name: string) {
     try {
-      const result = await this.regionModel.query('name').eq(name).exec();
+      const result = await this.regionModel.get({ name });
 
       return result;
     } catch (e) {
@@ -30,13 +30,13 @@ export class SchoolsService {
   }
 
   async createSchoolPage(
-    user_id: string,
+    userId: string,
     createSchoolPageDto: CreateSchoolPageDto,
   ) {
-    createSchoolPageDto.id = v4();
-    createSchoolPageDto.admins = [user_id];
+    createSchoolPageDto.admins = [userId];
     try {
-      await this.schoolModel.create(createSchoolPageDto);
+      const result = await this.schoolModel.create(createSchoolPageDto);
+      return result;
     } catch (e) {
       console.error('쿼리 중 에러가 발생했습니다.');
       throw e;
@@ -45,7 +45,8 @@ export class SchoolsService {
 
   async findSchoolById(id: string) {
     try {
-      const result = await this.schoolModel.query('id').eq(id).exec();
+      const result = await this.schoolModel.get({ id });
+
       return result;
     } catch (e) {
       console.error('쿼리 중 에러가 발생했습니다.');
@@ -54,10 +55,9 @@ export class SchoolsService {
   }
 
   async createSchoolFeed(createSchoolFeedDto: CreateSchoolFeedDto) {
-    createSchoolFeedDto.id = v4();
-
     try {
-      await this.feedModel.create(createSchoolFeedDto);
+      const result = await this.feedModel.create(createSchoolFeedDto);
+      return result;
     } catch (e) {
       console.error('쿼리 중 에러가 발생했습니다.');
       throw e;
@@ -73,9 +73,9 @@ export class SchoolsService {
       throw e;
     }
   }
-  async deleteSchoolFeed(id: string, created_at: number) {
+  async deleteSchoolFeed(id: string, createdAt: number) {
     try {
-      await this.feedModel.delete({ id, created_at: created_at.valueOf() });
+      await this.feedModel.delete({ id, created_at: createdAt.valueOf() });
     } catch (e) {
       console.error('쿼리 중 에러가 발생했습니다.');
       throw e;
@@ -84,12 +84,12 @@ export class SchoolsService {
 
   async updateSchoolFeed(
     id: string,
-    created_at: number,
+    createdAt: number,
     updateSchoolFeedDto: UpdateSchoolFeedDto,
   ) {
     try {
       await this.feedModel.update(
-        { id, created_at: created_at.valueOf() },
+        { id, created_at: createdAt.valueOf() },
         updateSchoolFeedDto,
       );
     } catch (e) {
@@ -98,11 +98,11 @@ export class SchoolsService {
     }
   }
 
-  async findSubscribeSchoolPages(subscribe_schools: string[]) {
+  async findSubscribeSchoolPages(subscribeSchools: string[]) {
     try {
       const result = await this.schoolModel
         .scan('id')
-        .in(subscribe_schools)
+        .in(subscribeSchools)
         .exec();
       return result;
     } catch (e) {

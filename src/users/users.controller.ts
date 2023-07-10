@@ -7,7 +7,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { SignUpUserDto } from './dto/users.dto';
+import { SignUpUserDto, SignUpUserResponseDto } from './dto/users.dto';
 import { Response } from 'express';
 import { AllowUnauthorizedRequest } from '../auth/guard/jwt-auth.guard';
 import {
@@ -34,6 +34,7 @@ export class UsersController {
   })
   @ApiCreatedResponse({
     description: '- 회원가입 성공 ',
+    type: SignUpUserResponseDto,
   })
   @ApiBadRequestResponse({
     description:
@@ -47,8 +48,8 @@ export class UsersController {
       throw new BadRequestException('email already exist');
     }
 
-    await this.userService.signUpUser(signUpUserDto);
+    const result = await this.userService.signUpUser(signUpUserDto);
 
-    res.status(HttpStatus.CREATED).json('user has been signed up');
+    res.status(HttpStatus.CREATED).json(result);
   }
 }

@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Body,
-  ConflictException,
   Controller,
   Delete,
   ForbiddenException,
@@ -17,10 +16,12 @@ import {
 import { SchoolsService } from './schools.service';
 import {
   CreateSchoolPageDto,
+  CreateSchoolPageResponseDto,
   FindSubscribeSchoolPagesResponseDto,
 } from './dto/schools.dto';
 import { Request, Response } from 'express';
 import {
+  CreateSchooFeedResponseDto,
   CreateSchoolFeedDto,
   GetSchoolFeedResponseDto,
   UpdateSchoolFeedDto,
@@ -63,6 +64,7 @@ export class SchoolsController {
   })
   @ApiCreatedResponse({
     description: '- 학교 페이지 생성 성공 ',
+    type: CreateSchoolPageResponseDto,
   })
   @ApiBadRequestResponse({
     description:
@@ -83,13 +85,16 @@ export class SchoolsController {
       createSchoolPageDto.region_name,
     );
 
-    if (!region[0]) {
+    if (!region) {
       throw new BadRequestException('region does not exist');
     }
 
-    await this.schoolService.createSchoolPage(req.user.id, createSchoolPageDto);
+    const result = await this.schoolService.createSchoolPage(
+      req.user.id,
+      createSchoolPageDto,
+    );
 
-    res.status(HttpStatus.CREATED).json('create school page successfully');
+    res.status(HttpStatus.CREATED).json(result);
   }
 
   @ApiOperation({
@@ -107,6 +112,7 @@ export class SchoolsController {
   })
   @ApiCreatedResponse({
     description: '- 학교 페이지 내에 피드 생성 성공 ',
+    type: CreateSchooFeedResponseDto,
   })
   @ApiBadRequestResponse({
     description:
@@ -131,16 +137,18 @@ export class SchoolsController {
     @Res() res: Response,
   ) {
     const school = await this.schoolService.findSchoolById(schoolId);
-    if (!school[0]) {
+    if (!school) {
       throw new BadRequestException('school does not exist');
     }
-    if (!school[0].admins.includes(req.user.id)) {
+    if (!school.admins.includes(req.user.id)) {
       throw new ForbiddenException('no permission');
     }
-    createSchoolFeedDto.school = school[0];
-    await this.schoolService.createSchoolFeed(createSchoolFeedDto);
+    createSchoolFeedDto.school = school;
+    const result = await this.schoolService.createSchoolFeed(
+      createSchoolFeedDto,
+    );
 
-    res.status(HttpStatus.CREATED).json('create school feed successfully');
+    res.status(HttpStatus.CREATED).json(result);
   }
 
   @ApiOperation({
@@ -185,11 +193,11 @@ export class SchoolsController {
     @Res() res: Response,
   ) {
     const school = await this.schoolService.findSchoolById(schoolId);
-    if (!school[0]) {
+    if (!school) {
       throw new BadRequestException('school does not exist');
     }
 
-    if (!school[0].admins.includes(req.user.id)) {
+    if (!school.admins.includes(req.user.id)) {
       throw new ForbiddenException('no permission');
     }
 
@@ -250,11 +258,11 @@ export class SchoolsController {
     @Res() res: Response,
   ) {
     const school = await this.schoolService.findSchoolById(schoolId);
-    if (!school[0]) {
+    if (!school) {
       throw new BadRequestException('school does not exist');
     }
 
-    if (!school[0].admins.includes(req.user.id)) {
+    if (!school.admins.includes(req.user.id)) {
       throw new ForbiddenException('no permission');
     }
 
@@ -273,7 +281,7 @@ export class SchoolsController {
   }
 
   @ApiOperation({
-    summary: '유저가 학교 페이지를 구독',
+    summary: '학생이 학교 페이지를 구독',
     description: '- 학생은 학교 페이지를 구독할 수 있다\n',
   })
   @ApiParam({
@@ -287,13 +295,13 @@ export class SchoolsController {
   @ApiBadRequestResponse({
     description:
       '- schoolId를 가진 학교가 존재하지 않는 경우 \n' +
-      '- 유저가 이미 schoolId를 가진 학교 페이지를 구독을 한 경우 \n' +
+      '- 학생이 이미 schoolId를 가진 학교 페이지를 구독을 한 경우 \n' +
       '- 올바르지 못한 값이 전달된 경우',
   })
   @ApiUnauthorizedResponse({
     description: '- 요청이 인가되지 않은 경우',
   })
-  @RoleLevel(Role.user)
+  @RoleLevel(Role.student)
   @UseGuards(RoleGuard)
   @Patch(':schoolId/subscribe')
   async subscribeSchoolPage(
@@ -302,19 +310,22 @@ export class SchoolsController {
     @Res() res: Response,
   ) {
     const school = await this.schoolService.findSchoolById(schoolId);
-    if (!school[0]) {
+    if (!school) {
       throw new BadRequestException('school does not exist');
     }
 
-    const user = await this.userService.findUserById(req.user.id);
+    const user = await this.userService.findUserByIdAndEmail(
+      req.user.id,
+      req.user.email,
+    );
 
-    if (user[0] && user[0].subscribe_schools.includes(schoolId)) {
+    if (user && user.subscribe_schools.includes(schoolId)) {
       throw new BadRequestException('user already subscribe school');
     }
 
     const result = await this.userService.subscribeSchoolPage(
-      user[0].id,
-      user[0].email,
+      user.id,
+      user.email,
       schoolId,
     );
 
@@ -322,18 +333,18 @@ export class SchoolsController {
   }
 
   @ApiOperation({
-    summary: '유저가 구독하고 있는 학교 페이지를 조회',
-    description: '- 유저가 구독하고 있는 모든 학교 페이지를 조회합니다\n',
+    summary: '학생이 구독하고 있는 학교 페이지를 조회',
+    description: '- 학생이 구독하고 있는 모든 학교 페이지를 조회합니다\n',
   })
   @ApiOkResponse({
-    description: '- 유저가 구독하고 있는 모든 학교 페이지를 조회 성공 ',
+    description: '- 학생이 구독하고 있는 모든 학교 페이지를 조회 성공 ',
     type: FindSubscribeSchoolPagesResponseDto,
     isArray: true,
   })
   @ApiUnauthorizedResponse({
     description: '- 요청이 인가되지 않은 경우',
   })
-  @RoleLevel(Role.user)
+  @RoleLevel(Role.student)
   @UseGuards(RoleGuard)
   @Get('subscribe')
   async findSubscribeSchoolPages(
@@ -341,20 +352,23 @@ export class SchoolsController {
 
     @Res() res: Response,
   ) {
-    const user = await this.userService.findUserById(req.user.id);
+    const user = await this.userService.findUserByIdAndEmail(
+      req.user.id,
+      req.user.email,
+    );
 
-    if (user[0].subscribe_schools.length == 0) {
+    if (user.subscribe_schools.length == 0) {
       res.status(HttpStatus.OK).json([]);
     } else {
       const result = await this.schoolService.findSubscribeSchoolPages(
-        user[0].subscribe_schools,
+        user.subscribe_schools,
       );
       res.status(HttpStatus.OK).json(result);
     }
   }
 
   @ApiOperation({
-    summary: '유저가 학교 페이지를 구독 취소',
+    summary: '학생이 학교 페이지를 구독 취소',
     description: '- 학생은 학교 페이지를 구독을 취소할 수 있다\n',
   })
   @ApiParam({
@@ -368,13 +382,13 @@ export class SchoolsController {
   @ApiBadRequestResponse({
     description:
       '- schoolId를 가진 학교가 존재하지 않는 경우 \n' +
-      '- 유저가 이미 schoolId를 가진 학교 페이지를 구독한 상태가 아닌 경우 \n' +
+      '- 학생이 이미 schoolId를 가진 학교 페이지를 구독한 상태가 아닌 경우 \n' +
       '- 올바르지 못한 값이 전달된 경우',
   })
   @ApiUnauthorizedResponse({
     description: '- 요청이 인가되지 않은 경우',
   })
-  @RoleLevel(Role.user)
+  @RoleLevel(Role.student)
   @UseGuards(RoleGuard)
   @Patch(':schoolId/unsubscribe')
   async unsubscribeSchoolPage(
@@ -383,27 +397,30 @@ export class SchoolsController {
     @Res() res: Response,
   ) {
     const school = await this.schoolService.findSchoolById(schoolId);
-    if (!school[0]) {
+    if (!school) {
       throw new BadRequestException('school does not exist');
     }
 
-    const user = await this.userService.findUserById(req.user.id);
+    const user = await this.userService.findUserByIdAndEmail(
+      req.user.id,
+      req.user.email,
+    );
 
-    if (user[0] && !user[0].subscribe_schools.includes(schoolId)) {
+    if (user && !user.subscribe_schools.includes(school.id)) {
       throw new BadRequestException('user already unsubscribe school');
     }
 
     const result = await this.userService.unsubscribeSchoolPage(
-      user[0],
-      schoolId,
+      user,
+      school.id,
     );
 
     res.status(201).json(result);
   }
 
   @ApiOperation({
-    summary: '유저가 구독한 학교 페이지의 소식을 조회',
-    description: '- 학생은  구독한 학교 페이지의 소식을 조회할 수 있다\n',
+    summary: '학생이 구독한 학교 페이지의 소식을 조회',
+    description: '- 학생이  구독한 학교 페이지의 소식을 조회할 수 있다\n',
   })
   @ApiParam({
     name: 'schoolId',
@@ -427,6 +444,8 @@ export class SchoolsController {
   @ApiUnauthorizedResponse({
     description: '- 요청이 인가되지 않은 경우',
   })
+  @RoleLevel(Role.student)
+  @UseGuards(RoleGuard)
   @Get(':schoolId/feeds')
   async getSchoolFeed(
     @Req() req: Request,
@@ -434,13 +453,15 @@ export class SchoolsController {
     @Res() res: Response,
   ) {
     const school = await this.schoolService.findSchoolById(schoolId);
-    if (!school[0]) {
+    if (!school) {
       throw new BadRequestException('school does not exist');
     }
+    const user = await this.userService.findUserByIdAndEmail(
+      req.user.id,
+      req.user.email,
+    );
 
-    const user = await this.userService.findUserById(req.user.id);
-
-    if (user[0] && !user[0].subscribe_schools.includes(schoolId)) {
+    if (user && !user.subscribe_schools.includes(schoolId)) {
       throw new ForbiddenException('should subscribe school page');
     }
     const result = await this.schoolService.findSchoolFeeds(schoolId);

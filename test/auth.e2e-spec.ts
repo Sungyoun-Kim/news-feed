@@ -11,6 +11,7 @@ const mockUserModel = {
   scan: jest.fn(),
   create: jest.fn(),
   query: jest.fn(),
+  get: jest.fn(),
 };
 describe('auth (e2e)', () => {
   let app: INestApplication;
@@ -109,17 +110,11 @@ describe('auth (e2e)', () => {
         .mockReturnValue({ type: 'refresh', sub: 'uuid' });
 
       jest.spyOn(JwtService.prototype, 'sign').mockReturnValue('uuid');
-      jest.spyOn(mockUserModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [
-            {
-              id: 'uuid',
-              email: 'email',
-              password: 'password',
-              role: 200,
-            },
-          ],
-        }),
+      jest.spyOn(mockUserModel, 'get').mockImplementationOnce(() => ({
+        id: 'uuid',
+        email: 'email',
+        password: 'password',
+        role: 200,
       }));
 
       return request(app.getHttpServer())
@@ -150,11 +145,6 @@ describe('auth (e2e)', () => {
         .spyOn(JwtService.prototype, 'verify')
         .mockReturnValue({ type: 'refresh', sub: 'uuid' });
 
-      jest.spyOn(mockUserModel, 'query').mockImplementationOnce(() => ({
-        eq: () => ({
-          exec: () => [],
-        }),
-      }));
       return request(app.getHttpServer())
         .get('/auth/refresh')
         .query({ token: 'token' })

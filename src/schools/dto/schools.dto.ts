@@ -15,6 +15,28 @@ export class CreateSchoolPageDto {
   region_name: string;
 }
 
+export class CreateSchoolPageResponseDto {
+  @ApiProperty({
+    description: 'id',
+    example: '4a966224-dcc5-417b-bed2-fcf5708f95bc',
+  })
+  id: string;
+
+  @ApiProperty({
+    description: '관리자',
+    example: ['e4ad093a-7313-4d99-a823-8f6e3acb6405'],
+  })
+  admins: string[];
+
+  @ApiProperty({ description: '학교 이름', example: '테스트고등학교' })
+  @IsString()
+  name: string;
+
+  @ApiProperty({ description: '지역 이름', example: '서울특별시' })
+  @IsString()
+  region_name: string;
+}
+
 export class FindSubscribeSchoolPagesResponseDto {
   @ApiProperty({
     description: '지역 이름',

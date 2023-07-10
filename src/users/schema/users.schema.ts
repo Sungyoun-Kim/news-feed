@@ -1,9 +1,9 @@
 import { Schema, model } from 'dynamoose';
+import { v4 } from 'uuid';
 
 export enum Role {
-  superAdmin = 300,
   admin = 200,
-  user = 100,
+  student = 100,
 }
 
 export const UserSchema = new Schema({
@@ -11,6 +11,7 @@ export const UserSchema = new Schema({
     type: String,
     hashKey: true,
     required: true,
+    default: () => v4(),
   },
   email: {
     type: String,

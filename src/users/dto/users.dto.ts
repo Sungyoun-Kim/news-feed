@@ -27,3 +27,29 @@ export class SignUpUserDto {
   @IsEnum(Role)
   role: number;
 }
+
+export class SignUpUserResponseDto {
+  @ApiProperty({
+    description: '이메일',
+    example: 'tes33313t2@email.com',
+  })
+  email: string;
+
+  @ApiProperty({
+    description: '역할',
+    example: '100',
+  })
+  role: Role;
+
+  @ApiProperty({
+    description: 'id',
+    example: '0333feb3-ccee-4ed8-814c-e6130ca2838c',
+  })
+  id: string;
+
+  @ApiProperty({
+    description: '구독하는 학교 페이지',
+    example: [],
+  })
+  subscribe_schools: string[];
+}
