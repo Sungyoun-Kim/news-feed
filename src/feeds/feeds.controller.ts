@@ -271,7 +271,10 @@ export class FeedsController {
       req.user.email,
     );
 
-    if (user && !user.subscribe_schools.includes(schoolId)) {
+    if (
+      user &&
+      !user.subscribe_schools.find((school) => school.id == schoolId)
+    ) {
       throw new ForbiddenException('should subscribe school page');
     }
     const result = await this.feedService.findSchoolFeeds(schoolId);

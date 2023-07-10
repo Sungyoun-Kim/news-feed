@@ -61,7 +61,11 @@ export class UsersService {
     try {
       const result = await this.userModel.update(
         { id: userId, email: email },
-        { $ADD: { subscribe_schools: [schoolId] } },
+        {
+          $ADD: {
+            subscribe_schools: [{ id: schoolId, subscribe_at: Date.now() }],
+          },
+        },
       );
       const { password, ...rest } = result;
       return rest;
@@ -79,7 +83,7 @@ export class UsersService {
   async unsubscribeSchoolPage(user: User, schoolId: string) {
     try {
       const deletedSchoolArr = user.subscribe_schools.filter(
-        (id) => id !== schoolId,
+        (school) => school.id !== schoolId,
       );
       const result = await this.userModel.update(
         { id: user.id, email: user.email },

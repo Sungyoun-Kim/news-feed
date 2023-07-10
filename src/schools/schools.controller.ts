@@ -128,7 +128,10 @@ export class SchoolsController {
       req.user.email,
     );
 
-    if (user && user.subscribe_schools.includes(schoolId)) {
+    if (
+      user &&
+      user.subscribe_schools.find((school) => school.id == schoolId)
+    ) {
       throw new BadRequestException('user already subscribe school');
     }
 
@@ -169,9 +172,11 @@ export class SchoolsController {
     if (user.subscribe_schools.length == 0) {
       res.status(HttpStatus.OK).json([]);
     } else {
+      const subscribeSchoolIds = [];
+      user.subscribe_schools.map((school) => subscribeSchoolIds.push(school));
       const result = await this.schoolService.findSubscribeSchoolPages(
-        user.subscribe_schools,
-      );
+        subscribeSchoolIds,
+      );subscribeSchoolIds
       res.status(HttpStatus.OK).json(result);
     }
   }
@@ -215,7 +220,10 @@ export class SchoolsController {
       req.user.email,
     );
 
-    if (user && !user.subscribe_schools.includes(school.id)) {
+    if (
+      user &&
+      !user.subscribe_schools.find((school) => school.id == schoolId)
+    ) {
       throw new BadRequestException('user already unsubscribe school');
     }
 
