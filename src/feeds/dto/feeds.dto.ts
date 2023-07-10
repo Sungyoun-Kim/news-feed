@@ -1,5 +1,5 @@
 import { IsOptional, IsString } from 'class-validator';
-import { School } from '../interface/schools.interface';
+import { School } from '../../schools/interface/schools.interface';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateSchoolFeedDto {
