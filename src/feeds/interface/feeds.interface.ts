@@ -1,4 +1,4 @@
-import { School } from './schools.interface';
+import { School } from '../../schools/interface/schools.interface';
 
 export interface FeedKey {
   id: string;

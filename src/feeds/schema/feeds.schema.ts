@@ -1,5 +1,5 @@
 import { Schema, model } from 'dynamoose';
-import { SchoolModel } from './schools.schema';
+import { SchoolModel } from '../../schools/schema/schools.schema';
 import { v4 } from 'uuid';
 
 export const FeedSchema = new Schema({

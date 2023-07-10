@@ -4,7 +4,7 @@ import { SchoolsController } from './schools.controller';
 import { SchoolSchema } from './schema/schools.schema';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { RegionSchema } from './schema/regions.schema';
-import { FeedSchema } from './schema/feeds.schema';
+import { FeedSchema } from '../feeds/schema/feeds.schema';
 import { UsersModule } from '../users/users.module';
 
 @Module({
@@ -25,16 +25,10 @@ import { UsersModule } from '../users/users.module';
           tableName: 'regions',
         },
       },
-      {
-        name: 'Feeds',
-        schema: FeedSchema,
-        options: {
-          tableName: 'feeds',
-        },
-      },
     ]),
   ],
   providers: [SchoolsService],
   controllers: [SchoolsController],
+  exports: [SchoolsService],
 })
 export class SchoolsModule {}
