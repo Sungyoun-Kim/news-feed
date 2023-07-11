@@ -28,7 +28,7 @@ export const UserSchema = new Schema({
   },
   subscribe_schools: {
     type: Array,
-    schema: [String],
+    schema: [{ type: Object, schema: { id: String, subscribe_at: Number } }],
     required: false,
     default: [],
   },

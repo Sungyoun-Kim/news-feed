@@ -6,5 +6,5 @@ export interface UserKey {
 export interface User extends UserKey {
   password: string;
   role: number;
-  subscribe_schools?: string[];
+  subscribe_schools?: { id: string; subscribe_at: number }[];
 }

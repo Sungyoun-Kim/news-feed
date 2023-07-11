@@ -4,8 +4,6 @@ import { School, SchoolKey } from './interface/schools.interface';
 import { Region, RegionKey } from './interface/regions.interface';
 import { CreateSchoolPageDto } from './dto/schools.dto';
 
-import { Feed, FeedKey } from '../feeds/interface/feeds.interface';
-
 @Injectable()
 export class SchoolsService {
   constructor(
