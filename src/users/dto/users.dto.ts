@@ -8,7 +8,7 @@ export class SignUpUserDto {
 
   @ApiProperty({
     description: '가입하고자 하는 이메일',
-    example: 'test2@email.com',
+    example: 'test@email.com',
   })
   @IsEmail()
   email: string;
@@ -31,13 +31,13 @@ export class SignUpUserDto {
 export class SignUpUserResponseDto {
   @ApiProperty({
     description: '이메일',
-    example: 'tes33313t2@email.com',
+    example: 'test@email.com',
   })
   email: string;
 
   @ApiProperty({
     description: '역할',
-    example: '100',
+    example: '200',
   })
   role: Role;
 

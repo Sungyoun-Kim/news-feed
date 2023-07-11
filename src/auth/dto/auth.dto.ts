@@ -4,7 +4,7 @@ export class LoginDto {
   @ApiProperty({ description: '- 이메일', example: 'test@email.com' })
   email: string;
 
-  @ApiProperty({ description: '- 비밀번호', example: 'test' })
+  @ApiProperty({ description: '- 비밀번호', example: '1234' })
   password: string;
 }
 
