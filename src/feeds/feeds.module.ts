@@ -5,6 +5,7 @@ import { DynamooseModule } from 'nestjs-dynamoose';
 import { FeedSchema } from './schema/feeds.schema';
 import { UsersModule } from '../users/users.module';
 import { SchoolsModule } from '../schools/schools.module';
+import { UnsubscribedFeedSchema } from './schema/unsubscribed-feeds.schema';
 
 @Module({
   imports: [
@@ -16,6 +17,13 @@ import { SchoolsModule } from '../schools/schools.module';
         schema: FeedSchema,
         options: {
           tableName: 'feeds',
+        },
+      },
+      {
+        name: 'UnsubscribedFeeds',
+        schema: UnsubscribedFeedSchema,
+        options: {
+          tableName: 'unsubscribed-feeds',
         },
       },
     ]),

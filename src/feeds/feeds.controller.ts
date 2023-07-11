@@ -280,4 +280,42 @@ export class FeedsController {
     const result = await this.feedService.findSchoolFeeds(schoolId);
     res.status(200).json(result);
   }
+
+  @ApiOperation({
+    summary: '학생이 구독한 학교 페이지를 모아보기',
+    description:
+      '- 학생은 구독 중인 학교 소식을 자신의 뉴스피드에서 모아봅니다\n' +
+      '- 소식은 최신 순으로 조회됩니다\n' +
+      '- 구독하는 시점 이후만 조회 됩니다\n' +
+      '- 구독을 취소해도 기존에 조회되던 소식은 조회됩니다',
+  })
+  @ApiOkResponse({
+    description: '- 학교 페이지 피드 조회 성공 ',
+    type: GetSchoolFeedResponseDto,
+    isArray: true,
+  })
+  @ApiUnauthorizedResponse({
+    description: '- 요청이 인가되지 않은 경우',
+  })
+  @RoleLevel(Role.student)
+  @UseGuards(RoleGuard)
+  @Get('feeds')
+  async getUserFeed(@Req() req: Request, @Res() res: Response) {
+    const user = await this.userService.findUserByIdAndEmail(
+      req.user.id,
+      req.user.email,
+    );
+    let userFeed = [];
+    const subscribeFeed = await this.feedService.findSubscribeFeed(
+      user.subscribe_schools,
+    );
+    subscribeFeed.map((feed) => (userFeed = [...userFeed, ...feed]));
+
+    const unsubsribeFeed = await this.feedService.findUnsubScribeFeed(user.id);
+
+    unsubsribeFeed.map((feed) => (userFeed = [...userFeed, ...feed.feeds]));
+
+    userFeed.sort((a, b) => b.created_at - a.created_at);
+    res.status(200).json(userFeed);
+  }
 }
