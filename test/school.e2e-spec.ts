@@ -144,7 +144,7 @@ describe('school (e2e)', () => {
     });
   });
 
-  describe('/schools/:schoolId/subscribe', () => {
+  describe('/schools/:schoolId/subscribe (PATCH)', () => {
     it('유저가 성공적으로 구독하는 경우', async () => {
       jest.spyOn(mockSchoolModel, 'get').mockImplementationOnce(() => ({
         region_name: '경상남도',
@@ -234,7 +234,7 @@ describe('school (e2e)', () => {
     });
   });
 
-  describe('/schools/subscribe', () => {
+  describe('/schools/subscribe (GET)', () => {
     it('유저가 성공적으로 구독하는 학교 페이지 목록을 조회하는 경우', async () => {
       jest
         .spyOn(UsersService.prototype, 'findUserByIdAndEmail')
@@ -276,7 +276,7 @@ describe('school (e2e)', () => {
     });
   });
 
-  describe('/schools/:schoolId/unsubscribe', () => {
+  describe('/schools/:schoolId/unsubscribe (PATCH)', () => {
     it('유저가 성공적으로 구독을 취소하는 경우', async () => {
       jest.spyOn(mockSchoolModel, 'get').mockImplementationOnce(() => ({
         region_name: '경상남도',

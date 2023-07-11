@@ -22,6 +22,10 @@ const mockSchoolModel = {
   get: jest.fn(),
 };
 
+const mockUnsubscribeFeedModel = {
+  query: jest.fn(),
+};
+
 describe('school (e2e)', () => {
   let app: INestApplication;
 
@@ -35,12 +39,18 @@ describe('school (e2e)', () => {
       providers: [
         { provide: getModelToken('Schools'), useValue: mockSchoolModel },
         { provide: getModelToken('Feeds'), useValue: mockFeedModel },
+        {
+          provide: getModelToken('UnsubscribedFeeds'),
+          useValue: mockUnsubscribeFeedModel,
+        },
       ],
     })
       .overrideProvider(getModelToken('Schools'))
       .useValue(mockSchoolModel)
       .overrideProvider(getModelToken('Feeds'))
       .useValue(mockFeedModel)
+      .overrideProvider(getModelToken('UnsubscribedFeeds'))
+      .useValue(mockUnsubscribeFeedModel)
 
       .compile();
 
@@ -421,7 +431,7 @@ describe('school (e2e)', () => {
     });
   });
 
-  describe('/schools/:schoolId/feed', () => {
+  describe('/schools/:schoolId/feed (GET)', () => {
     it('유저가 성공적으로 소식을 조회하는 경우', async () => {
       jest.spyOn(mockSchoolModel, 'get').mockImplementationOnce(() => ({
         region_name: '경상남도',
@@ -512,6 +522,84 @@ describe('school (e2e)', () => {
           error: 'Forbidden',
           statusCode: 403,
         });
+    });
+  });
+
+  describe('/feeds (GET)', () => {
+    it('유저의 피드를 성공적으로 조회한 경우', async () => {
+      jest
+        .spyOn(UsersService.prototype, 'findUserByIdAndEmail')
+        .mockResolvedValue({
+          email: 'test1234@naver.com',
+          id: 'uuid',
+          role: 200,
+          subscribe_schools: [],
+        } as Item<User>);
+
+      jest.spyOn(mockFeedModel, 'scan').mockImplementationOnce(() => ({
+        where: () => ({
+          between: () => ({
+            exec: () => [
+              {
+                id: 'c24788ba-62bb-49c5-a08f-2a9f82a0a44c',
+                created_at: 1688736027197,
+                content: '내용',
+                school: {
+                  name: '행복고등학교',
+                  id: '82d9823c-6f22-4c33-9f8c-f1c5ffce171b',
+                },
+                subject: '제목',
+              },
+            ],
+          }),
+        }),
+      }));
+
+      jest
+        .spyOn(mockUnsubscribeFeedModel, 'query')
+        .mockImplementationOnce(() => ({
+          eq: () => ({
+            exec: () => [
+              {
+                feeds: [
+                  {
+                    id: 'c24788ba-62bb-49c5-a08f-2a9f82a0a44c',
+                    created_at: 1688736027197,
+                    content: '내용',
+                    school: {
+                      name: '행복고등학교',
+                      id: '82d9823c-6f22-4c33-9f8c-f1c5ffce171b',
+                    },
+                    subject: '제목',
+                  },
+                ],
+                user_id: 'uuid',
+                created_at: 123456789,
+              },
+            ],
+          }),
+        }));
+
+      const response = await getUserAuth();
+      const { header } = response;
+
+      return request(app.getHttpServer())
+        .get('/feeds')
+        .set('Accept', 'application/json')
+        .set('Cookie', [...header['set-cookie']])
+        .expect(200)
+        .expect([
+          {
+            id: 'c24788ba-62bb-49c5-a08f-2a9f82a0a44c',
+            created_at: 1688736027197,
+            content: '내용',
+            school: {
+              name: '행복고등학교',
+              id: '82d9823c-6f22-4c33-9f8c-f1c5ffce171b',
+            },
+            subject: '제목',
+          },
+        ]);
     });
   });
 });

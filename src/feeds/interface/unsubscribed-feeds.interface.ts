@@ -1,8 +1,10 @@
+import { Feed } from './feeds.interface';
+
 export interface UnsubscribedFeedKey {
   user_id: string;
 }
 
 export interface UnsubscribedFeed extends UnsubscribedFeedKey {
-  feeds: object[];
+  feeds: Feed[];
   created_at?: number;
 }

@@ -37,6 +37,7 @@ import { Request, Response } from 'express';
 import { FeedsService } from './feeds.service';
 import { SchoolsService } from '../schools/schools.service';
 import { UsersService } from '../users/users.service';
+import { Feed } from './interface/feeds.interface';
 
 @ApiTags('Feed')
 @Controller()
@@ -305,7 +306,8 @@ export class FeedsController {
       req.user.id,
       req.user.email,
     );
-    let userFeed = [];
+    let userFeed: Feed[] = [];
+
     const subscribeFeed = await this.feedService.findSubscribeFeed(
       user.subscribe_schools,
     );
