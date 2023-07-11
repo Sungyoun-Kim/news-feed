@@ -60,7 +60,7 @@ describe('school (e2e)', () => {
   const getInvalidAdminAuth = async () =>
     await request(app.getHttpServer())
       .post('/auth/login')
-      .send({ email: 'suj9730@naver.com', password: '1234' });
+      .send({ email: 'invalidAdmin@email.com', password: '1234' });
 
   const getUserAuth = async () =>
     await request(app.getHttpServer())
@@ -70,7 +70,7 @@ describe('school (e2e)', () => {
   const getAdminAuth = async () =>
     await request(app.getHttpServer())
       .post('/auth/login')
-      .send({ email: 'suj970@naver.com', password: '1234' });
+      .send({ email: 'admin@email.com', password: '1234' });
 
   describe('/schools/:id/feed (POST)', () => {
     it('성공적으로 피드를 작성하는 경우', async () => {
@@ -78,7 +78,7 @@ describe('school (e2e)', () => {
         region_name: '경상남도',
         id: 'uuid',
         name: '행복고등학교',
-        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+        admins: ['90011720-73f2-454e-bce1-0f0fadf02dc5'],
       }));
 
       jest.spyOn(mockFeedModel, 'create').mockImplementationOnce(() => ({
@@ -186,7 +186,7 @@ describe('school (e2e)', () => {
         region_name: '경상남도',
         id: 'uuid',
         name: '행복고등학교',
-        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+        admins: ['90011720-73f2-454e-bce1-0f0fadf02dc5'],
       }));
 
       jest.spyOn(mockFeedModel, 'query').mockImplementationOnce(() => ({
@@ -260,7 +260,7 @@ describe('school (e2e)', () => {
         region_name: '경상남도',
         id: 'uuid',
         name: '행복고등학교',
-        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+        admins: ['90011720-73f2-454e-bce1-0f0fadf02dc5'],
       }));
 
       jest.spyOn(mockFeedModel, 'query').mockImplementationOnce(() => ({
@@ -307,7 +307,7 @@ describe('school (e2e)', () => {
         region_name: '경상남도',
         id: 'uuid',
         name: '행복고등학교',
-        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+        admins: ['90011720-73f2-454e-bce1-0f0fadf02dc5'],
       }));
 
       jest.spyOn(mockFeedModel, 'query').mockImplementationOnce(() => ({
@@ -381,7 +381,7 @@ describe('school (e2e)', () => {
         region_name: '경상남도',
         id: 'uuid',
         name: '행복고등학교',
-        admins: ['b7cba70b-78bc-438e-b08b-0679282c15a0'],
+        admins: ['90011720-73f2-454e-bce1-0f0fadf02dc5'],
       }));
 
       jest.spyOn(mockFeedModel, 'query').mockImplementationOnce(() => ({
@@ -436,7 +436,7 @@ describe('school (e2e)', () => {
           email: 'test1234@naver.com',
           id: 'uuid',
           role: 200,
-          subscribe_schools: ['uuid'],
+          subscribe_schools: [{ id: 'uuid', subscribe_at: 12345678 }],
         } as Item<User>);
 
       jest.spyOn(mockFeedModel, 'scan').mockImplementationOnce(() => ({

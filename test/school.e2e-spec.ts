@@ -67,7 +67,7 @@ describe('school (e2e)', () => {
   const getAdminAuth = async () =>
     await request(app.getHttpServer())
       .post('/auth/login')
-      .send({ email: 'suj970@naver.com', password: '1234' });
+      .send({ email: 'admin@email.com', password: '1234' });
 
   const getUserAuth = async () =>
     await request(app.getHttpServer())
@@ -159,15 +159,16 @@ describe('school (e2e)', () => {
           email: 'test1234@naver.com',
           id: 'uuid',
           role: 200,
-          subscribe_schools: ['82d9823c-6f22-4c33-9f8c-f1c5ffce171b'],
+          subscribe_schools: [],
         } as Item<User>);
+
       jest
         .spyOn(UsersService.prototype, 'subscribeSchoolPage')
         .mockResolvedValue({
           email: 'test1234@naver.com',
           id: 'uuid',
           role: 200,
-          subscribe_schools: ['82d9823c-6f22-4c33-9f8c-f1c5ffce171b', 'uuid'],
+          subscribe_schools: [{ id: 'uuid', subscribe_at: 12345678 }],
         } as Omit<Item<User>, 'password'>);
 
       const response = await getUserAuth();
@@ -182,7 +183,7 @@ describe('school (e2e)', () => {
           email: 'test1234@naver.com',
           id: 'uuid',
           role: 200,
-          subscribe_schools: ['82d9823c-6f22-4c33-9f8c-f1c5ffce171b', 'uuid'],
+          subscribe_schools: [{ id: 'uuid', subscribe_at: 12345678 }],
         });
     });
 
@@ -214,7 +215,7 @@ describe('school (e2e)', () => {
             email: 'test1234@naver.com',
             id: 'uuid',
             role: 200,
-            subscribe_schools: ['82d9823c-6f22-4c33-9f8c-f1c5ffce171b', 'uuid'],
+            subscribe_schools: [{ id: 'uuid', subscribe_at: 12345678 }],
           } as Item<User>);
 
       const response = await getUserAuth();
@@ -241,7 +242,7 @@ describe('school (e2e)', () => {
           email: 'test1234@naver.com',
           id: 'uuid',
           role: 200,
-          subscribe_schools: ['82d9823c-6f22-4c33-9f8c-f1c5ffce171b'],
+          subscribe_schools: [{ id: 'uuid', subscribe_at: 12345678 }],
         } as Item<User>);
 
       jest.spyOn(mockSchoolModel, 'scan').mockImplementationOnce(() => ({
@@ -290,16 +291,12 @@ describe('school (e2e)', () => {
           email: 'test1234@naver.com',
           id: 'uuid',
           role: 200,
-          subscribe_schools: ['uuid'],
+          subscribe_schools: [{ id: 'uuid', subscribe_at: 12345678 }],
         } as Item<User>);
+
       jest
         .spyOn(UsersService.prototype, 'unsubscribeSchoolPage')
-        .mockResolvedValue({
-          email: 'test1234@naver.com',
-          id: 'uuid',
-          role: 200,
-          subscribe_schools: [],
-        } as Omit<Item<User>, 'password'>);
+        .mockResolvedValue();
 
       const response = await getUserAuth();
       const { header } = response;
@@ -313,7 +310,7 @@ describe('school (e2e)', () => {
           email: 'test1234@naver.com',
           id: 'uuid',
           role: 200,
-          subscribe_schools: [],
+          subscribe_schools: [{ id: 'uuid', subscribe_at: 12345678 }],
         });
     });
 

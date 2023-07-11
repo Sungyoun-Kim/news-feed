@@ -5,7 +5,7 @@ import { UserSchema } from './schema/users.schema';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { AuthModule } from '../auth/auth.module';
 import { FeedSchema } from '../feeds/schema/feeds.schema';
-import { UnsubscribedFeedSchema } from 'src/feeds/schema/unsubscribed-feeds.schema';
+import { UnsubscribedFeedSchema } from '../feeds/schema/unsubscribed-feeds.schema';
 
 @Module({
   imports: [
